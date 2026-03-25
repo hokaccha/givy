@@ -23,6 +23,9 @@ make build            # Build frontend, then build Go binary with embedded asset
 - **TypeScript**: Strict mode. Prefer named exports. Use function components with hooks.
 - **CSS**: Tailwind CSS v4 utility classes. No custom CSS unless absolutely necessary.
 - **Tests**: Every new feature needs tests. E2E tests for user-facing behavior. Unit tests for logic.
+  - **Follow the test plan**: Before writing tests, read `docs/testing/test-plan.md` to understand the test layers and what belongs where.
+  - **Verify with executable tests**: Always run `make test-frontend` or `make test-e2e` to confirm changes work. Do not rely solely on visual inspection or screenshots.
+  - **Update test plan**: When adding new test files or test coverage, update `docs/testing/test-plan.md` in the same commit.
 
 ## Architecture Rules
 

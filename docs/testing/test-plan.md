@@ -54,6 +54,7 @@ Located in `frontend/src/__tests__/`.
 | `comments.test.ts` | Comment CRUD: create, read, update, delete in localStorage |
 | `comments.test.ts` | Comment key generation from repo/diff identifiers |
 | `comments.test.ts` | Prompt formatting (single file, all files) |
+| `code-viewer.test.ts` | Strip trailing newline (GitHub convention), language detection from file extension |
 
 ### 3. E2E Tests (Playwright) — Primary quality gate
 
