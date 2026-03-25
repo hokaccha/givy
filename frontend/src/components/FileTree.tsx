@@ -62,7 +62,8 @@ export function FileTree({ entries, owner, repo, currentPath }: FileTreeProps) {
               <td className="px-3 py-2">
                 <Link
                   to={buildLink(entry)}
-                  className="text-blue-600 hover:underline"
+                  className="hover:underline"
+                  style={{ color: "#0969da" }}
                 >
                   {entryName(entry.name)}
                 </Link>
