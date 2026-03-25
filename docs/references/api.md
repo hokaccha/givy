@@ -2,13 +2,26 @@
 
 All endpoints return JSON. Non-API routes serve the embedded SPA.
 
+## Server Info
+
+### `GET /api/info`
+
+Get server configuration info.
+
+**Response:**
+```json
+{
+  "rootDir": "/path/to/repos"
+}
+```
+
 ## Repositories
 
 ### `GET /api/repos?q=<query>`
 
 Search repositories. Returns repos whose `owner/name` contains the query
-(case-insensitive). The `q` parameter is required — omitting it returns
-an empty list by design (the UI uses incremental search).
+(case-insensitive). If `q` is omitted or empty, returns all repositories.
+Use `limit` to cap the number of results (e.g., `?limit=20`).
 
 **Response:**
 ```json

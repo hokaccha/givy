@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"path/filepath"
 
 	"github.com/hokaccha/givy/internal/server"
 	"github.com/spf13/cobra"
@@ -29,7 +30,10 @@ var serveCmd = &cobra.Command{
 	Long:  "Start the givy web server, serving repositories from the specified directory.",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
-		rootDir := args[0]
+		rootDir, err := filepath.Abs(args[0])
+		if err != nil {
+			return fmt.Errorf("resolving root directory: %w", err)
+		}
 		addr := fmt.Sprintf(":%d", servePort)
 		log.Printf("Starting givy server on http://localhost:%d (root: %s)", servePort, rootDir)
 

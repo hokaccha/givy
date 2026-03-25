@@ -26,7 +26,7 @@ export function TreeView() {
   }, [owner, repo, path]);
 
   const breadcrumbItems: Array<{ label: string; href?: string }> = [
-    { label: owner, href: "/" },
+    { label: owner },
     { label: repo, href: `/${owner}/${repo}` },
   ];
   if (path) {

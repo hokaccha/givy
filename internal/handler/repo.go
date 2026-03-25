@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/hokaccha/givy/internal/git"
@@ -11,6 +12,7 @@ import (
 // RegisterRoutes registers all API routes on the router.
 func RegisterRoutes(r chi.Router, rootDir string) {
 	r.Route("/api", func(r chi.Router) {
+		r.Get("/info", serverInfo(rootDir))
 		r.Get("/repos", listRepos(rootDir))
 		r.Get("/repos/{owner}/{repo}", getRepo(rootDir))
 		r.Get("/repos/{owner}/{repo}/branches", listBranches(rootDir))
@@ -21,6 +23,14 @@ func RegisterRoutes(r chi.Router, rootDir string) {
 	})
 }
 
+func serverInfo(rootDir string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]string{
+			"rootDir": rootDir,
+		})
+	}
+}
+
 func listRepos(rootDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("q")
@@ -29,7 +39,16 @@ func listRepos(rootDir string) http.HandlerFunc {
 			writeError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		writeJSON(w, http.StatusOK, repos)
+		totalCount := len(repos)
+		if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+			if limit, err := strconv.Atoi(limitStr); err == nil && limit > 0 && limit < len(repos) {
+				repos = repos[:limit]
+			}
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"repos":      repos,
+			"totalCount": totalCount,
+		})
 	}
 }
 

@@ -66,8 +66,24 @@ export interface RepoDetail {
   defaultBranch: string;
 }
 
-export function searchRepos(query: string): Promise<Repo[]> {
-  return fetchJSON<Repo[]>(`/repos?q=${encodeURIComponent(query)}`);
+export interface ServerInfo {
+  rootDir: string;
+}
+
+export function getServerInfo(): Promise<ServerInfo> {
+  return fetchJSON<ServerInfo>("/info");
+}
+
+export interface RepoListResponse {
+  repos: Repo[];
+  totalCount: number;
+}
+
+export function searchRepos(query: string, limit?: number): Promise<RepoListResponse> {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (limit) params.set("limit", String(limit));
+  return fetchJSON<RepoListResponse>(`/repos?${params.toString()}`);
 }
 
 export function getRepo(owner: string, repo: string): Promise<RepoDetail> {

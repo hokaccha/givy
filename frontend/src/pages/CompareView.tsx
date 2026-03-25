@@ -44,7 +44,7 @@ export function CompareView() {
   }, [owner, repo, base, head]);
 
   const breadcrumbItems = [
-    { label: owner, href: "/" },
+    { label: owner },
     { label: repo, href: `/${owner}/${repo}` },
     { label: `${base}...${head}` },
   ];

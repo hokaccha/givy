@@ -76,15 +76,21 @@ func TestListRepos(t *testing.T) {
 		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
 	}
 
-	var repos []map[string]interface{}
-	if err := json.Unmarshal(w.Body.Bytes(), &repos); err != nil {
+	var result struct {
+		Repos      []map[string]interface{} `json:"repos"`
+		TotalCount int                      `json:"totalCount"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
 		t.Fatal(err)
 	}
-	if len(repos) != 1 {
-		t.Fatalf("expected 1 repo, got %d", len(repos))
+	if len(result.Repos) != 1 {
+		t.Fatalf("expected 1 repo, got %d", len(result.Repos))
 	}
-	if repos[0]["owner"] != "testowner" {
-		t.Errorf("expected owner 'testowner', got %v", repos[0]["owner"])
+	if result.Repos[0]["owner"] != "testowner" {
+		t.Errorf("expected owner 'testowner', got %v", result.Repos[0]["owner"])
+	}
+	if result.TotalCount != 1 {
+		t.Errorf("expected totalCount 1, got %d", result.TotalCount)
 	}
 }
 
@@ -239,12 +245,15 @@ func TestListRepos_SearchFilter(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
 	}
-	var repos []map[string]interface{}
-	if err := json.Unmarshal(w.Body.Bytes(), &repos); err != nil {
+	var result struct {
+		Repos      []map[string]interface{} `json:"repos"`
+		TotalCount int                      `json:"totalCount"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
 		t.Fatal(err)
 	}
-	if len(repos) != 1 {
-		t.Fatalf("expected 1 repo, got %d", len(repos))
+	if len(result.Repos) != 1 {
+		t.Fatalf("expected 1 repo, got %d", len(result.Repos))
 	}
 
 	// Non-matching query
@@ -255,11 +264,14 @@ func TestListRepos_SearchFilter(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
-	var empty []map[string]interface{}
+	var empty struct {
+		Repos      []map[string]interface{} `json:"repos"`
+		TotalCount int                      `json:"totalCount"`
+	}
 	if err := json.Unmarshal(w.Body.Bytes(), &empty); err != nil {
 		t.Fatal(err)
 	}
-	if len(empty) != 0 {
-		t.Fatalf("expected 0 repos, got %d", len(empty))
+	if len(empty.Repos) != 0 {
+		t.Fatalf("expected 0 repos, got %d", len(empty.Repos))
 	}
 }
