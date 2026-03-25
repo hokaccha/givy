@@ -23,27 +23,17 @@ export default defineConfig({
 3. Tests run against `http://localhost:6271`
 4. Server stops, fixtures cleaned up
 
-## Page Object Pattern
+## URL Patterns
 
-Each page has a helper object for common interactions:
+File browsing URLs have no branch/ref — they use the filesystem directly:
 
-```typescript
-// e2e/helpers/repo-list.ts
-export class RepoListPage {
-  constructor(private page: Page) {}
-
-  async goto() {
-    await this.page.goto('/');
-  }
-
-  async getRepoLinks() {
-    return this.page.getByRole('link', { name: /\// }).all();
-  }
-
-  async clickRepo(owner: string, name: string) {
-    await this.page.getByRole('link', { name: `${owner}/${name}` }).click();
-  }
-}
+```
+/                                         → Repo list (search)
+/testowner/testrepo                       → Repo root (TreeView)
+/testowner/testrepo/tree/src              → Subdirectory
+/testowner/testrepo/blob/README.md        → File viewer
+/testowner/testrepo/blob/src/main.go      → Nested file
+/testowner/testrepo/compare/main...feature/add-tests  → Diff view
 ```
 
 ## Assertions
@@ -55,7 +45,7 @@ Use Playwright's built-in assertions for auto-waiting:
 await expect(page.getByRole('heading')).toHaveText('testrepo');
 
 // Check URL after navigation
-await expect(page).toHaveURL(/\/testowner\/testrepo\/tree\/main/);
+await expect(page).toHaveURL(/\/testowner\/testrepo$/);
 
 // Check localStorage
 const comments = await page.evaluate(() =>
@@ -98,14 +88,6 @@ expect(clipboardText).toContain('src/main.go');
 expect(clipboardText).toContain('Fix this logic');
 ```
 
-## Screenshot Testing (Optional)
-
-For visual regression of diff rendering:
-
-```typescript
-await expect(page.locator('.diff-viewer')).toHaveScreenshot('split-diff.png');
-```
-
 ## Debugging Failed Tests
 
 Use the playwright-cli skill for interactive debugging:
@@ -116,9 +98,4 @@ playwright-cli snapshot
 
 # Take a screenshot
 playwright-cli screenshot
-
-# Start a trace for detailed debugging
-playwright-cli trace start
-# ... reproduce the issue ...
-playwright-cli trace stop --output trace.zip
 ```

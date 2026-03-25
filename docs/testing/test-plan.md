@@ -15,27 +15,34 @@ Located alongside source files in `internal/git/` and `internal/handler/`.
 
 | Test File | What It Tests |
 |-----------|--------------|
-| `repo_test.go` | Repository discovery: finds `owner/repo/.git` dirs, ignores non-repos |
-| `tree_test.go` | `ls-tree` output parsing: files, dirs, sizes, modes |
+| `repo_test.go` | Repository discovery: finds `owner/repo/.git` dirs, ignores non-repos, search filtering |
+| `tree_test.go` | `ls-tree` output parsing, filesystem-based `ListDir`/`ReadFile` |
 | `branch_test.go` | Branch listing parsing, default branch detection |
 | `diff_test.go` | Unified diff output parsing into structured file/hunk data |
 | `git_test.go` | Command execution helper, error wrapping, timeout handling |
 
-Each test uses a real temporary git repository created by `testutil.CreateTestRepo()`.
-This function creates a repo with known commits, branches, and file types.
+Each test uses a real temporary git repository created in test helpers.
 
 #### `internal/handler/` — API integration tests
 
 | Test | What It Tests |
 |------|--------------|
-| `GET /api/repos` | Returns list of discovered repos with correct shape |
-| `GET /api/repos/:owner/:repo/tree/:ref` | Returns directory entries |
-| `GET /api/repos/:owner/:repo/blob/:ref/*path` | Returns file content, detects binary |
+| `GET /api/repos?q=` | Returns filtered list of repos matching query |
+| `GET /api/repos/:owner/:repo` | Returns repo metadata with default branch |
+| `GET /api/repos/:owner/:repo/tree` | Returns root directory entries (filesystem-based) |
+| `GET /api/repos/:owner/:repo/tree/*path` | Returns subdirectory entries |
+| `GET /api/repos/:owner/:repo/blob/*path` | Returns file content, detects binary |
 | `GET /api/repos/:owner/:repo/branches` | Returns branch list |
-| `GET /api/repos/:owner/:repo/compare/:base...:head` | Returns structured diff |
-| Error cases | 404 for missing repos/files, 400 for invalid refs |
+| `GET /api/repos/:owner/:repo/compare/:spec` | Returns structured diff |
+| Error cases | 404 for missing repos/files/trees |
 
-Tests use `httptest.NewServer` with a real test git repo.
+Tests use `httptest.NewRecorder` with a real test git repo.
+
+#### `cmd/` — CLI tests
+
+| Test | What It Tests |
+|------|--------------|
+| `review_test.go` | `resolveCompareSpec`: explicit base...head, single branch, no args, error cases |
 
 ### 2. Frontend Unit Tests (Vitest)
 
@@ -57,49 +64,43 @@ Test fixture repos are created by `frontend/e2e/fixtures/setup-repos.sh`.
 
 #### Test Suites
 
-**`repo-list.spec.ts`** — Repository listing
-- Shows all repos with owner/name
-- Clicking a repo navigates to its tree view
-- Shows empty state when directory has no repos
+**`repo-list.spec.ts`** — Repository search
+- Empty state on load with focused search input
+- Typing shows matching repos
+- Clicking a repo navigates to tree view
+- Non-matching query shows "no repos" message
 
 **`file-tree.spec.ts`** — File browsing
 - Root directory shows files and subdirectories
-- Clicking directory navigates deeper
+- Clicking directory navigates deeper (URL: `/:owner/:repo/tree/subdir`)
 - Shows file type icons (folder, file)
-- Breadcrumb shows current path
-- Breadcrumb links navigate correctly
-- Branch selector dropdown lists branches
-- Switching branch updates the tree
+- Breadcrumb navigation works
+- Directories listed before files
 
 **`file-viewer.spec.ts`** — File viewing
 - Markdown file renders as formatted HTML
 - Markdown supports GFM (tables, task lists, code blocks)
-- Code file shows syntax-highlighted content
-- Code file shows line numbers
+- Code file shows syntax-highlighted content with line numbers
 - Image file displays inline
-- Binary file shows download/info message
+- Binary file shows info message
 
 **`diff-view.spec.ts`** — Diff/compare view
 - Shows list of changed files with +/- stats
 - Default mode shows split diff
 - Can toggle to unified diff
 - Diff shows correct line numbers
-- Added lines highlighted in green
-- Removed lines highlighted in red
+- Added lines highlighted in green, removed in red
 - Can click on a file to jump to its diff
 
 **`review-comments.spec.ts`** — Review/comment system
 - Clicking line gutter opens comment form
 - Typing and submitting creates a comment
-- Comment appears in the diff at the correct location
 - Comment persists after page reload (localStorage)
 - Can edit an existing comment
 - Can delete a comment
-- Can select a range of lines (shift+click or drag)
-- Range comment displays across all selected lines
+- Can select a range of lines (shift+click)
 - "Copy Prompt" copies formatted text for one file
 - "Copy All Prompt" copies formatted text for all files
-- Copied prompt includes file path, line numbers, diff context, and comment text
 
 ## Test Fixture Repository
 
