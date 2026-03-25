@@ -5,7 +5,6 @@ interface FileTreeProps {
   entries: TreeEntry[];
   owner: string;
   repo: string;
-  refName: string;
   currentPath: string;
 }
 
@@ -37,7 +36,7 @@ function entryName(fullName: string): string {
   return parts[parts.length - 1];
 }
 
-export function FileTree({ entries, owner, repo, refName, currentPath }: FileTreeProps) {
+export function FileTree({ entries, owner, repo, currentPath }: FileTreeProps) {
   // Sort: directories first, then files, alphabetically within each group
   const sorted = [...entries].sort((a, b) => {
     if (a.type !== b.type) return a.type === "tree" ? -1 : 1;
@@ -48,7 +47,7 @@ export function FileTree({ entries, owner, repo, refName, currentPath }: FileTre
     const name = entryName(entry.name);
     const pathSegment = currentPath ? `${currentPath}/${name}` : name;
     const routeType = entry.type === "tree" ? "tree" : "blob";
-    return `/${owner}/${repo}/${routeType}/${refName}/${pathSegment}`;
+    return `/${owner}/${repo}/${routeType}/${pathSegment}`;
   }
 
   return (

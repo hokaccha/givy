@@ -29,7 +29,6 @@ export interface TreeEntry {
 }
 
 export interface TreeResponse {
-  ref: string;
   path: string;
   entries: TreeEntry[];
 }
@@ -81,23 +80,13 @@ export function listBranches(owner: string, repo: string): Promise<Branch[]> {
   return fetchJSON<Branch[]>(`/repos/${owner}/${repo}/branches`);
 }
 
-export function getTree(
-  owner: string,
-  repo: string,
-  ref: string,
-  path?: string
-): Promise<TreeResponse> {
+export function getTree(owner: string, repo: string, path?: string): Promise<TreeResponse> {
   const p = path ? `/${path}` : "";
-  return fetchJSON<TreeResponse>(`/repos/${owner}/${repo}/tree/${ref}${p}`);
+  return fetchJSON<TreeResponse>(`/repos/${owner}/${repo}/tree${p}`);
 }
 
-export function getBlob(
-  owner: string,
-  repo: string,
-  ref: string,
-  path: string
-): Promise<BlobResponse> {
-  return fetchJSON<BlobResponse>(`/repos/${owner}/${repo}/blob/${ref}/${path}`);
+export function getBlob(owner: string, repo: string, path: string): Promise<BlobResponse> {
+  return fetchJSON<BlobResponse>(`/repos/${owner}/${repo}/blob/${path}`);
 }
 
 export function getCompare(

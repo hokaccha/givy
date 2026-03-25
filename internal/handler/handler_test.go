@@ -109,15 +109,11 @@ func TestGetRepo(t *testing.T) {
 	}
 }
 
-// TestListTree_RootWithoutTrailingSlash is a regression test for the bug where
-// GET /api/repos/:owner/:repo/tree/:ref (no subpath) returned 404.
-// Root cause: chi's wildcard route `{ref}/*` requires at least one path segment
-// after the ref. The fix registers both `{ref}` and `{ref}/*` routes.
-func TestListTree_RootWithoutTrailingSlash(t *testing.T) {
+func TestListTree_Root(t *testing.T) {
 	root := createTestRepo(t)
 	r := setupRouter(root)
 
-	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/tree/main", nil)
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/tree", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -142,7 +138,7 @@ func TestListTree_WithSubpath(t *testing.T) {
 	root := createTestRepo(t)
 	r := setupRouter(root)
 
-	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/tree/main/src", nil)
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/tree/src", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -167,7 +163,7 @@ func TestListTree_NotFound(t *testing.T) {
 	root := createTestRepo(t)
 	r := setupRouter(root)
 
-	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/tree/nonexistent-branch", nil)
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/tree/nonexistent-path", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -180,7 +176,7 @@ func TestGetBlob(t *testing.T) {
 	root := createTestRepo(t)
 	r := setupRouter(root)
 
-	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/main/README.md", nil)
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

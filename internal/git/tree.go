@@ -3,6 +3,8 @@ package git
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -77,6 +79,82 @@ func parseTreeOutput(output string) ([]TreeEntry, error) {
 // ReadBlob reads the content of a file at the given ref and path.
 func ReadBlob(repoPath, ref, path string) (*BlobContent, error) {
 	raw, err := runGitRaw(repoPath, "show", fmt.Sprintf("%s:%s", ref, path))
+	if err != nil {
+		return nil, err
+	}
+
+	isBinary := isBinaryContent(raw)
+	size := int64(len(raw))
+
+	if isBinary {
+		return &BlobContent{
+			Content:  base64.StdEncoding.EncodeToString(raw),
+			Size:     size,
+			IsBinary: true,
+			Encoding: "base64",
+		}, nil
+	}
+
+	return &BlobContent{
+		Content:  string(raw),
+		Size:     size,
+		IsBinary: false,
+	}, nil
+}
+
+// ListDir reads directory entries from the actual filesystem.
+func ListDir(repoPath, subPath string) ([]TreeEntry, error) {
+	dir := repoPath
+	if subPath != "" {
+		dir = filepath.Join(repoPath, subPath)
+	}
+
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	var entries []TreeEntry
+	for _, de := range dirEntries {
+		if de.Name() == ".git" {
+			continue
+		}
+
+		entryType := "blob"
+		mode := "100644"
+		var size int64
+
+		if de.IsDir() {
+			entryType = "tree"
+			mode = "040000"
+		} else {
+			info, err := de.Info()
+			if err != nil {
+				return nil, err
+			}
+			size = info.Size()
+		}
+
+		entries = append(entries, TreeEntry{
+			Name: de.Name(),
+			Type: entryType,
+			Mode: mode,
+			Size: size,
+		})
+	}
+
+	if entries == nil {
+		entries = []TreeEntry{}
+	}
+
+	return entries, nil
+}
+
+// ReadFile reads a file from the actual filesystem.
+func ReadFile(repoPath, subPath string) (*BlobContent, error) {
+	fullPath := filepath.Join(repoPath, subPath)
+
+	raw, err := os.ReadFile(fullPath)
 	if err != nil {
 		return nil, err
 	}
