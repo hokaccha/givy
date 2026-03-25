@@ -9,7 +9,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RepoList />} />
-        <Route path="/:owner/:repo/compare/:spec" element={<CompareView />} />
+        <Route path="/:owner/:repo/compare/*" element={<CompareView />} />
         <Route path="/:owner/:repo/blob/*" element={<BlobView />} />
         <Route path="/:owner/:repo/tree/*" element={<TreeView />} />
         <Route path="/:owner/:repo" element={<TreeView />} />

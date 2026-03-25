@@ -12,7 +12,7 @@ func compareDiff(rootDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		owner := chi.URLParam(r, "owner")
 		repo := chi.URLParam(r, "repo")
-		spec := chi.URLParam(r, "spec")
+		spec := chi.URLParam(r, "*")
 
 		// Parse base...head
 		parts := strings.SplitN(spec, "...", 2)

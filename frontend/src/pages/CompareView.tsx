@@ -12,10 +12,12 @@ export function CompareView() {
   const params = useParams();
   const owner = params.owner!;
   const repo = params.repo!;
-  const spec = params.spec!;
+  const spec = params["*"]!;
 
-  // Parse base...head
-  const [base, head] = spec.split("...");
+  // Parse base...head (head may contain slashes, e.g. feature/foo)
+  const dotIndex = spec.indexOf("...");
+  const base = dotIndex >= 0 ? spec.slice(0, dotIndex) : spec;
+  const head = dotIndex >= 0 ? spec.slice(dotIndex + 3) : "";
 
   const [diffFiles, setDiffFiles] = useState<DiffFile[]>([]);
   const [, setFileStats] = useState<DiffStat[]>([]);

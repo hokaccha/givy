@@ -19,7 +19,7 @@ func RegisterRoutes(r chi.Router, rootDir string) {
 		r.Get("/repos/{owner}/{repo}/tree", listTree(rootDir))
 		r.Get("/repos/{owner}/{repo}/tree/*", listTree(rootDir))
 		r.Get("/repos/{owner}/{repo}/blob/*", getBlob(rootDir))
-		r.Get("/repos/{owner}/{repo}/compare/{spec}", compareDiff(rootDir))
+		r.Get("/repos/{owner}/{repo}/compare/*", compareDiff(rootDir))
 	})
 }
 

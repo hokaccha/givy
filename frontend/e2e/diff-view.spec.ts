@@ -7,9 +7,10 @@ test.describe("Diff View", () => {
   test("shows list of changed files", async ({ page }) => {
     await page.goto(compareUrl);
 
-    // Should show changed files
-    await expect(page.getByText("src/main.go")).toBeVisible();
-    await expect(page.getByText("src/main_test.go")).toBeVisible();
+    // Should show changed files in the file list
+    const fileList = page.locator("[data-testid='file-list']");
+    await expect(fileList.getByText("src/main.go")).toBeVisible();
+    await expect(fileList.getByText("src/main_test.go")).toBeVisible();
   });
 
   test("shows addition and deletion stats", async ({ page }) => {
