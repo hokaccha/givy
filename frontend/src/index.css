@@ -1,2 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/* Override Tailwind preflight for github-markdown-css */
+.markdown-body ul,
+.markdown-body ol {
+  list-style: revert;
+}
