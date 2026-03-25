@@ -7,7 +7,11 @@ interface CodeViewerProps {
   fileName: string;
 }
 
-function detectLanguage(fileName: string): string {
+export function stripTrailingNewline(code: string): string {
+  return code.endsWith("\n") ? code.slice(0, -1) : code;
+}
+
+export function detectLanguage(fileName: string): string {
   const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
   const map: Record<string, string> = {
     ts: "typescript",
@@ -53,14 +57,15 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
   const [loading, setLoading] = useState(true);
 
   const lang = language || detectLanguage(fileName);
-  const lines = code.split("\n");
+  const trimmedCode = stripTrailingNewline(code);
+  const lines = trimmedCode.split("\n");
   const lineCount = lines.length;
   const lineNumberPx = lineCount >= 1000 ? 64 : lineCount >= 100 ? 56 : 48;
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    codeToHtml(code, {
+    codeToHtml(trimmedCode, {
       lang,
       theme: "github-light",
     })
@@ -70,7 +75,7 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
       .catch(() => {
         // Fallback to plain text on error
         if (!cancelled) {
-          const escaped = code
+          const escaped = trimmedCode
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
@@ -83,7 +88,7 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
     return () => {
       cancelled = true;
     };
-  }, [code, lang]);
+  }, [trimmedCode, lang]);
 
   if (loading) {
     return (
