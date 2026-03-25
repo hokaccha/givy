@@ -17,8 +17,8 @@ test.describe("Repository List", () => {
 
     await page.getByRole("link", { name: /testowner\/testrepo/ }).click();
 
-    // Should navigate to the repo's default branch tree
-    await expect(page).toHaveURL(/\/testowner\/testrepo\/tree\/main/);
+    // Should navigate to the repo root (TreeView)
+    await expect(page).toHaveURL(/\/testowner\/testrepo$/);
   });
 
   test("shows repo owner and name separately", async ({ page }) => {

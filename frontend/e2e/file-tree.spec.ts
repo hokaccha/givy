@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("File Tree", () => {
   test("shows files and directories at repo root", async ({ page }) => {
-    await page.goto("/testowner/testrepo/tree/main");
+    await page.goto("/testowner/testrepo");
 
     // Should show directories
     await expect(page.getByRole("link", { name: "src" })).toBeVisible();
@@ -15,17 +15,17 @@ test.describe("File Tree", () => {
   });
 
   test("clicking a directory shows its contents", async ({ page }) => {
-    await page.goto("/testowner/testrepo/tree/main");
+    await page.goto("/testowner/testrepo");
 
     await page.getByRole("link", { name: "src" }).click();
 
-    await expect(page).toHaveURL(/\/testowner\/testrepo\/tree\/main\/src/);
+    await expect(page).toHaveURL(/\/testowner\/testrepo\/tree\/src/);
     await expect(page.getByRole("link", { name: "main.go" })).toBeVisible();
     await expect(page.getByRole("link", { name: "utils.go" })).toBeVisible();
   });
 
   test("breadcrumb navigation works", async ({ page }) => {
-    await page.goto("/testowner/testrepo/tree/main/src");
+    await page.goto("/testowner/testrepo/tree/src");
 
     // Breadcrumb should show repo name as a link
     const repoLink = page.getByRole("link", { name: "testrepo" });
@@ -33,39 +33,20 @@ test.describe("File Tree", () => {
 
     // Click repo name to go back to root
     await repoLink.click();
-    await expect(page).toHaveURL(/\/testowner\/testrepo\/tree\/main$/);
+    await expect(page).toHaveURL(/\/testowner\/testrepo$/);
   });
 
-  test("branch selector lists available branches", async ({ page }) => {
-    await page.goto("/testowner/testrepo/tree/main");
+  test("directories are listed before files", async ({ page }) => {
+    await page.goto("/testowner/testrepo");
 
-    // Open branch selector
-    const branchSelector = page.getByRole("button", { name: /main/ });
-    await expect(branchSelector).toBeVisible();
-    await branchSelector.click();
+    // Get all links in the file tree table
+    const links = page.locator("table a");
+    const names = await links.allTextContents();
 
-    // Should show feature branch
-    await expect(
-      page.getByRole("option", { name: /feature\/add-tests/ })
-    ).toBeVisible();
-  });
+    // Find positions of a known directory and file
+    const srcIdx = names.indexOf("src");
+    const readmeIdx = names.indexOf("README.md");
 
-  test("switching branch updates file tree", async ({ page }) => {
-    await page.goto("/testowner/testrepo/tree/main/src");
-
-    // Switch to feature branch
-    const branchSelector = page.getByRole("button", { name: /main/ });
-    await branchSelector.click();
-    await page
-      .getByRole("option", { name: /feature\/add-tests/ })
-      .click();
-
-    // Feature branch should have main_test.go
-    await expect(page).toHaveURL(
-      /\/testowner\/testrepo\/tree\/feature\/add-tests/
-    );
-    await expect(
-      page.getByRole("link", { name: "main_test.go" })
-    ).toBeVisible();
+    expect(srcIdx).toBeLessThan(readmeIdx);
   });
 });

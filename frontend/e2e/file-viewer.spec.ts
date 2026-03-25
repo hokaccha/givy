@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("File Viewer", () => {
   test("renders markdown file as formatted HTML", async ({ page }) => {
-    await page.goto("/testowner/testrepo/blob/main/README.md");
+    await page.goto("/testowner/testrepo/blob/README.md");
 
     // Should render markdown heading
     await expect(
@@ -14,7 +14,7 @@ test.describe("File Viewer", () => {
   });
 
   test("renders GFM features (tables, task lists)", async ({ page }) => {
-    await page.goto("/testowner/testrepo/blob/main/README.md");
+    await page.goto("/testowner/testrepo/blob/README.md");
 
     // Should render table
     await expect(page.locator("table")).toBeVisible();
@@ -25,7 +25,7 @@ test.describe("File Viewer", () => {
   });
 
   test("shows syntax-highlighted code", async ({ page }) => {
-    await page.goto("/testowner/testrepo/blob/main/src/main.go");
+    await page.goto("/testowner/testrepo/blob/src/main.go");
 
     // Should show file content
     await expect(page.getByText('fmt.Println("Hello, World!")')).toBeVisible();
@@ -35,14 +35,14 @@ test.describe("File Viewer", () => {
   });
 
   test("displays image inline", async ({ page }) => {
-    await page.goto("/testowner/testrepo/blob/main/assets/logo.png");
+    await page.goto("/testowner/testrepo/blob/assets/logo.png");
 
     // Should show an image element
     await expect(page.locator("img")).toBeVisible();
   });
 
   test("shows binary file message", async ({ page }) => {
-    await page.goto("/testowner/testrepo/blob/main/data.bin");
+    await page.goto("/testowner/testrepo/blob/data.bin");
 
     // Should show a message that the file is binary
     await expect(page.getByText(/binary/i)).toBeVisible();

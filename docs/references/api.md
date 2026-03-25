@@ -37,7 +37,7 @@ Get repository metadata.
 
 ### `GET /api/repos/:owner/:repo/branches`
 
-List all branches.
+List all branches. Used for diff/compare features.
 
 **Response:**
 ```json
@@ -55,64 +55,62 @@ List all branches.
 ]
 ```
 
-## File Tree
+## File Tree (filesystem-based)
 
-### `GET /api/repos/:owner/:repo/tree/:ref/*path`
+### `GET /api/repos/:owner/:repo/tree`
+### `GET /api/repos/:owner/:repo/tree/*path`
 
-List entries in a directory. `path` is optional (defaults to root).
+List entries in a directory using the actual filesystem (not git objects).
+`path` is optional (defaults to repository root). Skips `.git` directory.
 
 **Response:**
 ```json
 {
-  "ref": "main",
   "path": "src",
   "entries": [
     {
       "name": "main.go",
       "type": "blob",
-      "mode": "100644",
+      "mode": "0644",
       "size": 1234
     },
     {
       "name": "internal",
       "type": "tree",
-      "mode": "040000",
+      "mode": "0755",
       "size": 0
     }
   ]
 }
 ```
 
-## File Content
+## File Content (filesystem-based)
 
-### `GET /api/repos/:owner/:repo/blob/:ref/*path`
+### `GET /api/repos/:owner/:repo/blob/*path`
 
-Get file content.
+Get file content from the actual filesystem (not git objects).
 
 **Response (text):**
 ```json
 {
-  "ref": "main",
   "path": "src/main.go",
   "name": "main.go",
   "content": "package main\n\nfunc main() {...}",
   "size": 1234,
   "isBinary": false,
-  "language": "go"
+  "encoding": ""
 }
 ```
 
 **Response (binary):**
 ```json
 {
-  "ref": "main",
   "path": "assets/logo.png",
   "name": "logo.png",
   "content": "<base64 encoded>",
   "encoding": "base64",
   "size": 5678,
-  "isBinary": true,
-  "language": ""
+  "isBinary": true
 }
 ```
 
@@ -120,7 +118,8 @@ Get file content.
 
 ### `GET /api/repos/:owner/:repo/compare/:base...:head`
 
-Get diff between two refs.
+Get diff between two refs (branches, commits). This is the only endpoint
+that uses git objects rather than the filesystem.
 
 **Response:**
 ```json
@@ -155,6 +154,6 @@ All errors return:
 
 | Status | Meaning |
 |--------|---------|
-| 400 | Bad request (invalid ref, malformed path) |
+| 400 | Bad request (malformed path) |
 | 404 | Repository, branch, or file not found |
 | 500 | Internal error (git command failed) |
