@@ -226,3 +226,40 @@ func TestGetRepo_NotFound(t *testing.T) {
 		t.Fatalf("expected 404, got %d", w.Code)
 	}
 }
+
+func TestListRepos_SearchFilter(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	// Matching query
+	req := httptest.NewRequest("GET", "/api/repos?q=testowner", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var repos []map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &repos); err != nil {
+		t.Fatal(err)
+	}
+	if len(repos) != 1 {
+		t.Fatalf("expected 1 repo, got %d", len(repos))
+	}
+
+	// Non-matching query
+	req = httptest.NewRequest("GET", "/api/repos?q=nonexistent", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	var empty []map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &empty); err != nil {
+		t.Fatal(err)
+	}
+	if len(empty) != 0 {
+		t.Fatalf("expected 0 repos, got %d", len(empty))
+	}
+}

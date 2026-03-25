@@ -1,0 +1,127 @@
+package cmd
+
+import (
+	"fmt"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"github.com/spf13/cobra"
+)
+
+var (
+	reviewPort    int
+	reviewRootDir string
+)
+
+func init() {
+	reviewCmd.Flags().IntVar(&reviewPort, "port", 6271, "server port")
+	reviewCmd.Flags().StringVar(&reviewRootDir, "root", "", "root directory (same as serve argument)")
+	rootCmd.AddCommand(reviewCmd)
+}
+
+var reviewCmd = &cobra.Command{
+	Use:   "review [base...head | branch]",
+	Short: "Open the review/diff view in the browser",
+	Long: `Open the givy review view in the default browser.
+
+Usage:
+  givy review                          # Compare current branch against default branch
+  givy review feature/branch           # Compare feature/branch against default branch
+  givy review main...feature/branch    # Compare specific base and head`,
+	Args: cobra.MaximumNArgs(1),
+	RunE: func(_ *cobra.Command, args []string) error {
+		rootDir := reviewRootDir
+		var err error
+
+		// Get current directory's repo info
+		cwd, err := filepath.Abs(".")
+		if err != nil {
+			return fmt.Errorf("get cwd: %w", err)
+		}
+
+		if rootDir == "" {
+			rootDir, err = inferRootDir(cwd)
+			if err != nil {
+				return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
+			}
+		} else {
+			rootDir, err = filepath.Abs(rootDir)
+			if err != nil {
+				return fmt.Errorf("resolve root: %w", err)
+			}
+		}
+
+		// Determine owner/repo from cwd
+		relPath, err := filepath.Rel(rootDir, cwd)
+		if err != nil {
+			return fmt.Errorf("compute relative path: %w", err)
+		}
+		parts := strings.SplitN(relPath, string(filepath.Separator), 3)
+		if len(parts) < 2 {
+			return fmt.Errorf("must be inside a repo directory (<root>/<owner>/<repo>/...)")
+		}
+		owner := parts[0]
+		repo := parts[1]
+		repoDir := filepath.Join(rootDir, owner, repo)
+
+		base, head, err := resolveCompareSpec(repoDir, args)
+		if err != nil {
+			return err
+		}
+
+		url := fmt.Sprintf("http://localhost:%d/%s/%s/compare/%s...%s", reviewPort, owner, repo, base, head)
+		fmt.Println(url)
+		return openBrowser(url)
+	},
+}
+
+// resolveCompareSpec determines the base and head refs from the arguments.
+func resolveCompareSpec(repoDir string, args []string) (base, head string, err error) {
+	if len(args) == 1 {
+		arg := args[0]
+		if strings.Contains(arg, "...") {
+			// Explicit base...head
+			parts := strings.SplitN(arg, "...", 2)
+			if parts[0] == "" || parts[1] == "" {
+				return "", "", fmt.Errorf("invalid compare spec: %q", arg)
+			}
+			return parts[0], parts[1], nil
+		}
+		// Single branch: compare default...branch
+		defaultBranch := detectDefaultBranch(repoDir)
+		return defaultBranch, arg, nil
+	}
+
+	// No args: compare default...current
+	currentBranch := detectBranch(repoDir)
+	if currentBranch == "" {
+		return "", "", fmt.Errorf("not on a branch (detached HEAD)")
+	}
+	defaultBranch := detectDefaultBranch(repoDir)
+	if currentBranch == defaultBranch {
+		return "", "", fmt.Errorf("already on the default branch (%s), specify a branch to compare", defaultBranch)
+	}
+	return defaultBranch, currentBranch, nil
+}
+
+// detectDefaultBranch determines the default branch for a repository.
+func detectDefaultBranch(repoDir string) string {
+	cmd := exec.Command("git", "-C", repoDir, "symbolic-ref", "refs/remotes/origin/HEAD")
+	out, err := cmd.Output()
+	if err == nil {
+		name := filepath.Base(strings.TrimSpace(string(out)))
+		if name != "" {
+			return name
+		}
+	}
+	cmd = exec.Command("git", "-C", repoDir, "rev-parse", "--verify", "refs/heads/main")
+	if err := cmd.Run(); err == nil {
+		return "main"
+	}
+	cmd = exec.Command("git", "-C", repoDir, "rev-parse", "--verify", "refs/heads/master")
+	if err := cmd.Run(); err == nil {
+		return "master"
+	}
+	return "main"
+}

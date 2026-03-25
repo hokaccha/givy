@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { FileTree } from "../components/FileTree";
+import { ReviewLauncher } from "../components/ReviewLauncher";
 import { getTree } from "../api/client";
 import type { TreeEntry } from "../api/client";
 
@@ -50,15 +51,19 @@ export function TreeView() {
           <Breadcrumb items={breadcrumbItems} />
         </div>
 
-        {loading && <p className="text-gray-500">Loading...</p>}
-        {error && <p className="text-red-600">{error}</p>}
+        {!path && <ReviewLauncher owner={owner} repo={repo} />}
+
+        {loading && <p className="text-gray-500 mt-4">Loading...</p>}
+        {error && <p className="text-red-600 mt-4">{error}</p>}
         {!loading && !error && (
-          <FileTree
-            entries={entries}
-            owner={owner}
-            repo={repo}
-            currentPath={path}
-          />
+          <div className={path ? "" : "mt-4"}>
+            <FileTree
+              entries={entries}
+              owner={owner}
+              repo={repo}
+              currentPath={path}
+            />
+          </div>
         )}
       </div>
     </Layout>

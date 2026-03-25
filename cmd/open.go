@@ -66,13 +66,9 @@ var openCmd = &cobra.Command{
 			filePath = parts[2]
 		}
 
-		// Detect the current branch
-		repoDir := filepath.Join(rootDir, owner, repo)
-		branch := detectBranch(repoDir)
-
 		var url string
 		if filePath == "" {
-			url = fmt.Sprintf("http://localhost:%d/%s/%s/tree/%s", openPort, owner, repo, branch)
+			url = fmt.Sprintf("http://localhost:%d/%s/%s", openPort, owner, repo)
 		} else {
 			// Determine if it's a file or directory
 			info, err := os.Stat(targetPath)
@@ -83,7 +79,7 @@ var openCmd = &cobra.Command{
 			if info.IsDir() {
 				routeType = "tree"
 			}
-			url = fmt.Sprintf("http://localhost:%d/%s/%s/%s/%s/%s", openPort, owner, repo, routeType, branch, filePath)
+			url = fmt.Sprintf("http://localhost:%d/%s/%s/%s/%s", openPort, owner, repo, routeType, filePath)
 		}
 
 		fmt.Println(url)
