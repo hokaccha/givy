@@ -32,6 +32,7 @@ domains, package layering, dependency rules, and data flow.
 | [docs/references/api.md](docs/references/api.md) | REST API endpoint specs (request/response shapes) |
 | [docs/references/git-operations.md](docs/references/git-operations.md) | Git commands used and their output formats |
 | [docs/references/url-routing.md](docs/references/url-routing.md) | Frontend URL structure and route params |
+| [docs/references/known-issues.md](docs/references/known-issues.md) | Past bugs, root causes, and prevention patterns |
 
 ## Testing
 
