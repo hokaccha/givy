@@ -5,7 +5,8 @@ the working directory. This document lists every git command used and its expect
 
 ## Repository Discovery
 
-Not a git command. Scan the root directory for `<owner>/<repo>/.git` directories.
+Not a git command. Scan the root directory for `<owner>/<repo>/.git` directories
+using `os.ReadDir`. No git commands are invoked.
 
 ## Default Branch
 
@@ -14,6 +15,8 @@ git -C <repo> symbolic-ref refs/remotes/origin/HEAD
 # Output: refs/remotes/origin/main
 # Fallback: check if "main" exists, then "master"
 ```
+
+Used by: `ListBranches` (to mark default), `givy review` (to determine base).
 
 ## List Branches
 
@@ -24,33 +27,27 @@ git -C <repo> branch --format='%(refname:short) %(objectname:short)'
 # feature/review def5678
 ```
 
-## List Tree (Directory Contents)
+## File Tree (Directory Contents)
 
+**Not a git command.** Uses `os.ReadDir` to list directory entries on the
+actual filesystem. Skips `.git` directory. Returns name, type (blob/tree),
+mode, and size.
+
+Legacy git-based approach (kept for reference, no longer used for browsing):
 ```bash
-git -C <repo> ls-tree -l <ref> -- <path>
-# Output (tab-separated):
-# 100644 blob abc1234    1234	src/main.go
-# 040000 tree def5678       -	src/internal
+git -C <repo> ls-tree -l <ref> -- <path>/
 ```
-
-Fields: mode, type, hash, size (- for trees), name
 
 ## Read File Content
 
+**Not a git command.** Uses `os.ReadFile` to read file content from the
+actual filesystem. Binary detection uses byte scanning (null bytes, high
+non-UTF-8 ratio). Binary files are base64-encoded in the response.
+
+Legacy git-based approach (kept for reference, no longer used for browsing):
 ```bash
 git -C <repo> show <ref>:<path>
-# Output: raw file content (binary or text)
 ```
-
-## Check if File is Binary
-
-```bash
-git -C <repo> diff --numstat 4b825dc642cb6eb9a060e54bf899d69f82a3af3 <ref> -- <path>
-# Output for binary: -	-	<path>
-# Output for text:   10	0	<path>
-```
-
-The hash `4b825dc642cb6eb9a060e54bf899d69f82a3af3` is the empty tree.
 
 ## Generate Diff
 
@@ -59,26 +56,11 @@ git -C <repo> diff <base>...<head>
 # Output: standard unified diff
 ```
 
-## Diff Stats
-
-```bash
-git -C <repo> diff --stat <base>...<head>
-# Output:
-#  src/main.go | 10 ++++---
-#  2 files changed, 7 insertions(+), 3 deletions(-)
-```
-
 ## Diff with Numstat
 
 ```bash
 git -C <repo> diff --numstat <base>...<head>
 # Output (tab-separated):
 # 7	3	src/main.go
-```
-
-## Last Commit for Path
-
-```bash
-git -C <repo> log -1 --format='%H %s %aI' -- <path>
-# Output: abc1234def5678... Fix the bug 2025-01-15T10:30:00+09:00
+# -	-	binary-file.png  (binary files show - for both)
 ```

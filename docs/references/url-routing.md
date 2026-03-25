@@ -29,6 +29,19 @@ This means:
 - Uncommitted changes are visible in the file browser
 - `.git` directory is automatically hidden
 
+## Review Flow
+
+Users reach the compare/review view in two ways:
+
+1. **Web UI**: On the repo root page (`/:owner/:repo`), a ReviewLauncher
+   component shows base/head branch selectors. Clicking "Compare" navigates
+   to `/:owner/:repo/compare/base...head`.
+
+2. **CLI**: `givy review [spec]` opens the compare view in the browser.
+   - `givy review` — current branch vs default branch
+   - `givy review feature/x` — feature/x vs default branch
+   - `givy review main...feature/x` — explicit base and head
+
 ## API Routes
 
 All API routes are prefixed with `/api/`. See [api.md](api.md) for details.

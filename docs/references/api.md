@@ -4,18 +4,18 @@ All endpoints return JSON. Non-API routes serve the embedded SPA.
 
 ## Repositories
 
-### `GET /api/repos`
+### `GET /api/repos?q=<query>`
 
-List all repositories found in the served directory.
+Search repositories. Returns repos whose `owner/name` contains the query
+(case-insensitive). The `q` parameter is required — omitting it returns
+an empty list by design (the UI uses incremental search).
 
 **Response:**
 ```json
 [
   {
     "owner": "hokaccha",
-    "name": "givy",
-    "defaultBranch": "main",
-    "updatedAt": "2025-01-15T10:30:00Z"
+    "name": "givy"
   }
 ]
 ```

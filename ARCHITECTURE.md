@@ -42,7 +42,7 @@ internal/git/     → Git operations via exec.Command, filesystem scanning
 
 | Domain | Package | Responsibility |
 |--------|---------|---------------|
-| CLI | `cmd/` | Parse CLI args, start server, open browser |
+| CLI | `cmd/` | Parse CLI args: `serve`, `open`, `review` |
 | HTTP | `internal/server/` | Server lifecycle, routing, middleware, static files |
 | API | `internal/handler/` | Request parsing, response formatting, error mapping |
 | Git | `internal/git/` | Execute git commands, parse output, scan repos |
@@ -59,13 +59,20 @@ internal/git/     → Git operations via exec.Command, filesystem scanning
 
 ## Data Flow
 
-1. User navigates to a URL (e.g., `/owner/repo/tree/main/src`)
-2. React Router matches route, renders page component
-3. Page component calls API client (`GET /api/repos/owner/repo/tree/main/src`)
-4. Go handler receives request, calls git layer
-5. Git layer runs `git -C <repo_path> ls-tree main -- src` via exec.Command
-6. Output is parsed into structured data, returned as JSON
-7. Page component renders the data
+### File Browsing (filesystem-based)
+1. User navigates to a URL (e.g., `/:owner/:repo/tree/src`)
+2. React Router matches route, renders TreeView page
+3. Page calls API client (`GET /api/repos/:owner/:repo/tree/src`)
+4. Go handler calls `os.ReadDir` / `os.ReadFile` on the actual filesystem
+5. Result is returned as JSON
+6. Page component renders the data
+
+### Diff/Review (git-based)
+1. User selects branches on repo page or runs `givy review`
+2. CompareView loads (`GET /api/repos/:owner/:repo/compare/base...head`)
+3. Go handler runs `git diff base...head` via exec.Command
+4. Unified diff is parsed into structured data, returned as JSON
+5. DiffViewer renders split/unified view with comment support
 
 No caching at any layer. Every request hits git/filesystem directly.
 
