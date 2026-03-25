@@ -1,11 +1,22 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Repository List", () => {
-  test("displays all repositories", async ({ page }) => {
+  test("shows empty state initially with search input focused", async ({
+    page,
+  }) => {
     await page.goto("/");
 
-    // Should show the repo list page
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByPlaceholder(/search/i)).toBeFocused();
+
+    // No repos shown before typing
+    await expect(page.getByRole("link", { name: /testowner/ })).not.toBeVisible();
+  });
+
+  test("typing in search shows matching repos", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByPlaceholder(/search/i).fill("test");
 
     // Should list testowner/testrepo
     const repoLink = page.getByRole("link", { name: /testowner\/testrepo/ });
@@ -15,16 +26,17 @@ test.describe("Repository List", () => {
   test("clicking a repo navigates to its tree view", async ({ page }) => {
     await page.goto("/");
 
+    await page.getByPlaceholder(/search/i).fill("test");
     await page.getByRole("link", { name: /testowner\/testrepo/ }).click();
 
-    // Should navigate to the repo root (TreeView)
     await expect(page).toHaveURL(/\/testowner\/testrepo$/);
   });
 
-  test("shows repo owner and name separately", async ({ page }) => {
+  test("non-matching search shows no results", async ({ page }) => {
     await page.goto("/");
 
-    // Should display owner/repo format
-    await expect(page.getByText("testowner/testrepo")).toBeVisible();
+    await page.getByPlaceholder(/search/i).fill("nonexistent-xyz");
+
+    await expect(page.getByText(/no repositories found/i)).toBeVisible();
   });
 });

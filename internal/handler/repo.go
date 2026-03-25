@@ -23,7 +23,8 @@ func RegisterRoutes(r chi.Router, rootDir string) {
 
 func listRepos(rootDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		repos, err := git.DiscoverRepos(rootDir)
+		query := r.URL.Query().Get("q")
+		repos, err := git.DiscoverRepos(rootDir, query)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, err.Error())
 			return

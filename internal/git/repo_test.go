@@ -12,7 +12,7 @@ import (
 func TestDiscoverRepos(t *testing.T) {
 	root := createTestRepo(t)
 
-	repos, err := git.DiscoverRepos(root)
+	repos, err := git.DiscoverRepos(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,9 +28,6 @@ func TestDiscoverRepos(t *testing.T) {
 	if repo.Name != "testrepo" {
 		t.Errorf("expected name 'testrepo', got %q", repo.Name)
 	}
-	if repo.DefaultBranch != "main" {
-		t.Errorf("expected default branch 'main', got %q", repo.DefaultBranch)
-	}
 }
 
 func TestDiscoverRepos_IgnoresNonGitDirs(t *testing.T) {
@@ -41,7 +38,7 @@ func TestDiscoverRepos_IgnoresNonGitDirs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	repos, err := git.DiscoverRepos(root)
+	repos, err := git.DiscoverRepos(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +56,7 @@ func TestDiscoverRepos_IgnoresDotDirs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	repos, err := git.DiscoverRepos(root)
+	repos, err := git.DiscoverRepos(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +88,7 @@ func TestDiscoverRepos_MultipleRepos(t *testing.T) {
 	run("config", "user.email", "test@example.com")
 	run("config", "user.name", "Test User")
 
-	repos, err := git.DiscoverRepos(root)
+	repos, err := git.DiscoverRepos(root, "")
 	if err != nil {
 		t.Fatal(err)
 	}

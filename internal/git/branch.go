@@ -1,6 +1,7 @@
 package git
 
 import (
+	"path/filepath"
 	"strings"
 )
 
@@ -17,6 +18,23 @@ func ListBranches(repoPath string) ([]BranchInfo, error) {
 
 	defaultBranch := detectDefaultBranch(repoPath)
 	return parseBranchOutput(out, defaultBranch), nil
+}
+
+// detectDefaultBranch tries to determine the default branch of a repository.
+func detectDefaultBranch(repoPath string) string {
+	out, err := runGit(repoPath, "symbolic-ref", "refs/remotes/origin/HEAD")
+	if err == nil {
+		if name := filepath.Base(out); name != "" {
+			return name
+		}
+	}
+	if _, err := runGit(repoPath, "rev-parse", "--verify", "refs/heads/main"); err == nil {
+		return "main"
+	}
+	if _, err := runGit(repoPath, "rev-parse", "--verify", "refs/heads/master"); err == nil {
+		return "master"
+	}
+	return "main"
 }
 
 // parseBranchOutput parses the output of `git branch --format=...`.

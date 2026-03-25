@@ -2,9 +2,8 @@ package git
 
 // RepoInfo represents a discovered git repository.
 type RepoInfo struct {
-	Owner        string `json:"owner"`
-	Name         string `json:"name"`
-	DefaultBranch string `json:"defaultBranch"`
+	Owner string `json:"owner"`
+	Name  string `json:"name"`
 }
 
 // TreeEntry represents a single entry in a git tree (file or directory).

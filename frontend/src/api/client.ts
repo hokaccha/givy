@@ -12,7 +12,6 @@ async function fetchJSON<T>(path: string): Promise<T> {
 export interface Repo {
   owner: string;
   name: string;
-  defaultBranch: string;
 }
 
 export interface Branch {
@@ -34,7 +33,6 @@ export interface TreeResponse {
 }
 
 export interface BlobResponse {
-  ref: string;
   path: string;
   name: string;
   content: string;
@@ -68,8 +66,8 @@ export interface RepoDetail {
   defaultBranch: string;
 }
 
-export function listRepos(): Promise<Repo[]> {
-  return fetchJSON<Repo[]>("/repos");
+export function searchRepos(query: string): Promise<Repo[]> {
+  return fetchJSON<Repo[]>(`/repos?q=${encodeURIComponent(query)}`);
 }
 
 export function getRepo(owner: string, repo: string): Promise<RepoDetail> {
