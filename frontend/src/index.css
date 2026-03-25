@@ -6,3 +6,8 @@
 .markdown-body ol {
   list-style: revert;
 }
+
+/* Remove double padding from highlight.js code blocks */
+.markdown-body pre code.hljs {
+  padding: 0;
+}
