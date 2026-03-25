@@ -53,6 +53,9 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
   const [loading, setLoading] = useState(true);
 
   const lang = language || detectLanguage(fileName);
+  const lines = code.split("\n");
+  const lineCount = lines.length;
+  const lineNumberPx = lineCount >= 1000 ? 64 : lineCount >= 100 ? 56 : 48;
 
   useEffect(() => {
     let cancelled = false;
@@ -84,33 +87,39 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
 
   if (loading) {
     return (
-      <div className="border border-gray-200 rounded-md p-4 text-sm text-gray-500">
+      <div className="border border-gray-200 rounded-md p-4 text-xs text-gray-500">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="border border-gray-200 rounded-md overflow-auto">
-      <div className="relative">
-        {/* Line numbers overlay */}
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gray-50 border-r border-gray-200" />
+    <div className="border border-gray-200 rounded-md overflow-hidden">
+      {/* File header */}
+      <div className="flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
+        <span className="text-xs text-gray-700 font-medium">{fileName}</span>
+        <span className="ml-auto text-xs text-gray-500">
+          {lineCount} lines
+        </span>
+      </div>
+      {/* Code area */}
+      <div className="overflow-auto">
         <div className="flex">
-          <div className="w-12 flex-shrink-0 text-right pr-2 pt-4 pb-4 select-none">
-            {code.split("\n").map((_, i) => (
-              <div
-                key={i}
-                data-line-number={i + 1}
-                className="text-xs text-gray-400 leading-5 h-5"
-              >
-                {i + 1}
-              </div>
-            ))}
-          </div>
-          <div
-            className="flex-1 overflow-auto text-sm [&_pre]:!m-0 [&_pre]:!p-4 [&_pre]:!bg-transparent [&_code]:leading-5"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+          <div className="flex-shrink-0 text-right px-3 py-2 select-none bg-gray-50 border-r border-gray-200" style={{ width: lineNumberPx }}>
+              {lines.map((_, i) => (
+                <div
+                  key={i}
+                  data-line-number={i + 1}
+                  className="text-xs text-gray-500 leading-5 h-5 font-mono"
+                >
+                  {i + 1}
+                </div>
+              ))}
+            </div>
+            <div
+              className="flex-1 overflow-auto text-xs [&_pre]:!m-0 [&_pre]:!py-2 [&_pre]:!pl-4 [&_pre]:!pr-4 [&_pre]:!bg-transparent [&_code]:leading-5 [&_code]:!text-xs"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
         </div>
       </div>
     </div>
