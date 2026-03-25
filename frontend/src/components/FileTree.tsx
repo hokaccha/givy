@@ -23,13 +23,6 @@ function FileIcon({ type }: { type: "blob" | "tree" }) {
   );
 }
 
-function formatSize(bytes: number): string {
-  if (bytes === 0) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function entryName(fullName: string): string {
   // ls-tree returns "path/to/name" when listing with a prefix — extract last segment
   const parts = fullName.split("/");
@@ -66,9 +59,6 @@ export function FileTree({ entries, owner, repo, currentPath }: FileTreeProps) {
                 >
                   {entryName(entry.name)}
                 </Link>
-              </td>
-              <td className="px-3 py-2 text-right text-gray-500 w-24">
-                {entry.type === "blob" ? formatSize(entry.size) : ""}
               </td>
             </tr>
           ))}

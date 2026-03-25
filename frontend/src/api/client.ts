@@ -79,10 +79,11 @@ export interface RepoListResponse {
   totalCount: number;
 }
 
-export function searchRepos(query: string, limit?: number): Promise<RepoListResponse> {
+export function searchRepos(query: string, options?: { limit?: number; owner?: string }): Promise<RepoListResponse> {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
-  if (limit) params.set("limit", String(limit));
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.owner) params.set("owner", options.owner);
   return fetchJSON<RepoListResponse>(`/repos?${params.toString()}`);
 }
 

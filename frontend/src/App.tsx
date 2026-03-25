@@ -13,6 +13,7 @@ export default function App() {
         <Route path="/:owner/:repo/blob/*" element={<BlobView />} />
         <Route path="/:owner/:repo/tree/*" element={<TreeView />} />
         <Route path="/:owner/:repo" element={<TreeView />} />
+        <Route path="/:owner" element={<RepoList />} />
       </Routes>
     </BrowserRouter>
   );

@@ -41,7 +41,7 @@ export function BlobView() {
 
   const segments = path.split("/");
   const breadcrumbItems: Array<{ label: string; href?: string }> = [
-    { label: owner },
+    { label: owner, href: `/${owner}` },
     { label: repo, href: `/${owner}/${repo}` },
   ];
   segments.forEach((seg, i) => {

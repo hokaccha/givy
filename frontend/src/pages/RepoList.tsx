@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
-import { Layout } from "../components/Layout";
+import { Link, useParams } from "react-router";
+import { Layout, Breadcrumb } from "../components/Layout";
 import { searchRepos, getServerInfo } from "../api/client";
 import type { Repo } from "../api/client";
 
 export function RepoList() {
+  const { owner } = useParams<{ owner?: string }>();
   const [query, setQuery] = useState("");
   const [repos, setRepos] = useState<Repo[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -21,7 +22,7 @@ export function RepoList() {
     const controller = new AbortController();
     abortRef.current = controller;
     const limit = q.trim() === "" ? 20 : undefined;
-    searchRepos(q, limit)
+    searchRepos(q, { limit, owner })
       .then((data) => {
         if (!controller.signal.aborted) {
           setRepos(data.repos ?? []);
@@ -35,7 +36,7 @@ export function RepoList() {
           setLoading(false);
         }
       });
-  }, []);
+  }, [owner]);
 
   useEffect(() => {
     const timer = setTimeout(() => search(query), 200);
@@ -50,9 +51,16 @@ export function RepoList() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto p-8">
+        {owner && (
+          <div className="mb-4">
+            <Breadcrumb items={[
+              { label: owner },
+            ]} />
+          </div>
+        )}
         <div className="flex items-baseline justify-between mb-6">
           <h1 className="text-2xl font-semibold">Repositories</h1>
-          {rootDir && (
+          {!owner && rootDir && (
             <span className="text-sm text-gray-500">{rootDir}</span>
           )}
         </div>

@@ -34,10 +34,20 @@ func serverInfo(rootDir string) http.HandlerFunc {
 func listRepos(rootDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("q")
+		ownerFilter := r.URL.Query().Get("owner")
 		repos, err := git.DiscoverRepos(rootDir, query)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, err.Error())
 			return
+		}
+		if ownerFilter != "" {
+			filtered := repos[:0]
+			for _, repo := range repos {
+				if repo.Owner == ownerFilter {
+					filtered = append(filtered, repo)
+				}
+			}
+			repos = filtered
 		}
 		totalCount := len(repos)
 		if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
