@@ -56,14 +56,13 @@ export function FileTree({ entries, owner, repo, currentPath }: FileTreeProps) {
         <tbody>
           {sorted.map((entry) => (
             <tr key={entry.name} className="border-t border-gray-100 first:border-t-0 hover:bg-gray-50">
-              <td className="px-3 py-2 w-8">
+              <td className="pl-3 pr-1 py-2 w-6">
                 <FileIcon type={entry.type} />
               </td>
-              <td className="px-3 py-2">
+              <td className="pl-1 pr-3 py-2">
                 <Link
                   to={buildLink(entry)}
-                  className="hover:underline"
-                  style={{ color: "#0969da" }}
+                  className="text-gray-800 hover:underline hover:text-blue-600"
                 >
                   {entryName(entry.name)}
                 </Link>
