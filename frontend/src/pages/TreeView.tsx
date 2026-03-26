@@ -3,9 +3,12 @@ import { useParams } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { FileTree } from "../components/FileTree";
 import { ReviewLauncher } from "../components/ReviewLauncher";
-import { getTree } from "../api/client";
+import { MarkdownViewer } from "../components/MarkdownViewer";
+import { getTree, getBlob } from "../api/client";
 import type { TreeEntry } from "../api/client";
 import { useTitle } from "../hooks/useTitle";
+
+const README_PATTERN = /^readme\.md$/i;
 
 export function TreeView() {
   const params = useParams();
@@ -18,6 +21,7 @@ export function TreeView() {
   const [entries, setEntries] = useState<TreeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [readme, setReadme] = useState<string | null>(null);
   const [prevFetchKey, setPrevFetchKey] = useState("");
 
   const fetchKey = `${owner}/${repo}/${path}`;
@@ -25,11 +29,24 @@ export function TreeView() {
     setPrevFetchKey(fetchKey);
     setLoading(true);
     setError(null);
+    setReadme(null);
   }
 
   useEffect(() => {
     getTree(owner, repo, path)
-      .then((data) => setEntries(data.entries ?? []))
+      .then((data) => {
+        const list = data.entries ?? [];
+        setEntries(list);
+        const readmeEntry = list.find(
+          (e) => e.type === "blob" && README_PATTERN.test(e.name),
+        );
+        if (readmeEntry) {
+          const readmePath = path ? `${path}/${readmeEntry.name}` : readmeEntry.name;
+          getBlob(owner, repo, readmePath)
+            .then((blob) => setReadme(blob.content))
+            .catch(() => {});
+        }
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [owner, repo, path]);
@@ -64,14 +81,24 @@ export function TreeView() {
         {loading && <p className="text-gray-500 mt-4">Loading...</p>}
         {error && <p className="text-red-600 mt-4">{error}</p>}
         {!loading && !error && (
-          <div className={path ? "" : "mt-4"}>
-            <FileTree
-              entries={entries}
-              owner={owner}
-              repo={repo}
-              currentPath={path}
-            />
-          </div>
+          <>
+            <div className={path ? "" : "mt-4"}>
+              <FileTree
+                entries={entries}
+                owner={owner}
+                repo={repo}
+                currentPath={path}
+              />
+            </div>
+            {readme && (
+              <div className="mt-6">
+                <MarkdownViewer
+                  content={readme}
+                  rawBaseUrl={`/api/repos/${owner}/${repo}/raw${path ? `/${path}` : ""}`}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </Layout>
