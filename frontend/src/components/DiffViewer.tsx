@@ -353,6 +353,7 @@ function InlineCommentRow({
   onCancelComment,
   onUpdateComment,
   onDeleteComment,
+  splitLeftType,
 }: {
   gutterTypes: DiffLine["type"][];
   contentCols: number;
@@ -362,33 +363,44 @@ function InlineCommentRow({
   onCancelComment: () => void;
   onUpdateComment: (id: string, body: string) => void;
   onDeleteComment: (id: string) => void;
+  splitLeftType?: DiffLine["type"];
 }) {
   if (!commentForm && lineComments.length === 0) return null;
+
+  const commentContent = (
+    <div className="py-2 px-4 max-w-[700px]">
+      {lineComments.map((c) => (
+        <CommentDisplay
+          key={c.id}
+          body={c.body}
+          onEdit={(body) => onUpdateComment(c.id, body)}
+          onDelete={() => onDeleteComment(c.id)}
+        />
+      ))}
+      {commentForm && (
+        <DiffCommentForm
+          startLine={commentForm.startLine}
+          endLine={commentForm.endLine}
+          onSubmit={onSubmitComment}
+          onCancel={onCancelComment}
+        />
+      )}
+    </div>
+  );
+
   return (
     <tr className="bg-white">
       {gutterTypes.map((type, i) => (
         <td key={i} className={gutterClass(type)} />
       ))}
-      <td colSpan={contentCols}>
-        <div className="py-2 px-4 max-w-[700px]">
-          {lineComments.map((c) => (
-            <CommentDisplay
-              key={c.id}
-              body={c.body}
-              onEdit={(body) => onUpdateComment(c.id, body)}
-              onDelete={() => onDeleteComment(c.id)}
-            />
-          ))}
-          {commentForm && (
-            <DiffCommentForm
-              startLine={commentForm.startLine}
-              endLine={commentForm.endLine}
-              onSubmit={onSubmitComment}
-              onCancel={onCancelComment}
-            />
-          )}
-        </div>
-      </td>
+      {splitLeftType !== undefined ? (
+        <>
+          <td className={lineClass(splitLeftType)} />
+          <td>{commentContent}</td>
+        </>
+      ) : (
+        <td colSpan={contentCols}>{commentContent}</td>
+      )}
     </tr>
   );
 }
@@ -492,6 +504,7 @@ function SplitDiffView({
                 <InlineCommentRow
                   gutterTypes={[leftType, rightType]}
                   contentCols={2}
+                  splitLeftType={leftType}
                   commentForm={showForm ? commentForm : null}
                   lineComments={lineComments}
                   onSubmitComment={onSubmitComment}
