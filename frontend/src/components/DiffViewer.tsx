@@ -345,7 +345,8 @@ function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
 }
 
 function InlineCommentRow({
-  colSpan,
+  gutterCols,
+  contentCols,
   commentForm,
   lineComments,
   onSubmitComment,
@@ -353,7 +354,8 @@ function InlineCommentRow({
   onUpdateComment,
   onDeleteComment,
 }: {
-  colSpan: number;
+  gutterCols: number;
+  contentCols: number;
   commentForm: DiffViewProps["commentForm"] | null;
   lineComments: Comment[];
   onSubmitComment: (body: string) => void;
@@ -364,8 +366,11 @@ function InlineCommentRow({
   if (!commentForm && lineComments.length === 0) return null;
   return (
     <tr>
-      <td colSpan={colSpan} className="bg-[#f6f8fa] border-t border-b border-[#d0d7de]">
-        <div className="px-4">
+      {Array.from({ length: gutterCols }).map((_, i) => (
+        <td key={i} className="bg-[#f6f8fa] border-t border-b border-[#d0d7de]" />
+      ))}
+      <td colSpan={contentCols} className="bg-[#f6f8fa] border-t border-b border-[#d0d7de]">
+        <div className="py-2 pr-4 max-w-[700px]">
           {lineComments.map((c) => (
             <CommentDisplay
               key={c.id}
@@ -485,7 +490,8 @@ function SplitDiffView({
                   </td>
                 </tr>
                 <InlineCommentRow
-                  colSpan={4}
+                  gutterCols={2}
+                  contentCols={2}
                   commentForm={showForm ? commentForm : null}
                   lineComments={lineComments}
                   onSubmitComment={onSubmitComment}
@@ -554,7 +560,8 @@ function UnifiedDiffView({
                       </td>
                     </tr>
                     <InlineCommentRow
-                      colSpan={3}
+                      gutterCols={2}
+                      contentCols={1}
                       commentForm={showForm ? commentForm : null}
                       lineComments={lineComments}
                       onSubmitComment={onSubmitComment}
