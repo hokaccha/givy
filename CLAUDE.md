@@ -14,6 +14,12 @@ make lint             # All linters: golangci-lint + eslint + prettier
 
 # Building
 make build            # Build frontend, then build Go binary with embedded assets
+
+# Browser automation (for visual inspection / screenshots)
+npx @playwright/cli open <url>       # Open browser
+npx @playwright/cli screenshot       # Take screenshot
+npx @playwright/cli snapshot         # Get page snapshot (accessibility tree)
+npx @playwright/cli close            # Close browser
 ```
 
 ## Coding Conventions

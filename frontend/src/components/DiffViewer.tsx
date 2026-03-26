@@ -315,7 +315,7 @@ function GutterCell({
     <td
       data-line={lineNumber ?? ""}
       data-side={side}
-      className={`group/gutter relative w-[1%] min-w-10 text-right px-2 py-0 select-none ${clickable ? "cursor-pointer" : ""} ${gutterClass(type)}`}
+      className={`group/gutter relative w-[1%] min-w-[50px] text-right px-2.5 py-0 align-top select-none ${clickable ? "cursor-pointer" : ""} ${gutterClass(type)}`}
       onClick={onClick}
     >
       {clickable && (
@@ -347,6 +347,7 @@ function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
 function InlineCommentRow({
   gutterCols,
   contentCols,
+  lineType,
   commentForm,
   lineComments,
   onSubmitComment,
@@ -356,6 +357,7 @@ function InlineCommentRow({
 }: {
   gutterCols: number;
   contentCols: number;
+  lineType: DiffLine["type"];
   commentForm: DiffViewProps["commentForm"] | null;
   lineComments: Comment[];
   onSubmitComment: (body: string) => void;
@@ -367,10 +369,10 @@ function InlineCommentRow({
   return (
     <tr className="bg-white">
       {Array.from({ length: gutterCols }).map((_, i) => (
-        <td key={i} />
+        <td key={i} className={gutterClass(lineType)} />
       ))}
-      <td colSpan={contentCols} className="border-t border-b border-[#d0d7de]">
-        <div className="py-2 pr-4 max-w-[700px]">
+      <td colSpan={contentCols}>
+        <div className="py-2 px-4 max-w-[700px]">
           {lineComments.map((c) => (
             <CommentDisplay
               key={c.id}
@@ -492,6 +494,7 @@ function SplitDiffView({
                 <InlineCommentRow
                   gutterCols={2}
                   contentCols={2}
+                  lineType={rightType}
                   commentForm={showForm ? commentForm : null}
                   lineComments={lineComments}
                   onSubmitComment={onSubmitComment}
@@ -562,6 +565,7 @@ function UnifiedDiffView({
                     <InlineCommentRow
                       gutterCols={2}
                       contentCols={1}
+                      lineType={line.type}
                       commentForm={showForm ? commentForm : null}
                       lineComments={lineComments}
                       onSubmitComment={onSubmitComment}
