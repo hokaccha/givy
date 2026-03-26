@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { codeToHtml } from "shiki";
 
 interface CodeViewerProps {
   code: string;
   language: string;
   fileName: string;
+  filePath?: string;
+  absolutePath?: string;
 }
 
 export function stripTrailingNewline(code: string): string {
@@ -52,9 +54,79 @@ export function detectLanguage(fileName: string): string {
   return map[ext] || "text";
 }
 
-export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
+interface LinePopoverState {
+  lineNumber: number;
+  top: number;
+  left: number;
+}
+
+function LineNumberPopover({
+  filePath,
+  absolutePath,
+  lineNumber,
+  top,
+  left,
+  onClose,
+}: {
+  filePath: string;
+  absolutePath?: string;
+  lineNumber: number;
+  top: number;
+  left: number;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+
+  const copyPathAndLine = () => {
+    navigator.clipboard.writeText(`${filePath}:${lineNumber}`);
+    onClose();
+  };
+
+  const copyAbsolutePathAndLine = () => {
+    if (absolutePath) {
+      navigator.clipboard.writeText(`${absolutePath}:${lineNumber}`);
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[220px]"
+      style={{ top, left }}
+    >
+      <button
+        className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer"
+        onClick={copyPathAndLine}
+      >
+        Copy file path and line number
+      </button>
+      {absolutePath && (
+        <button
+          className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer"
+          onClick={copyAbsolutePathAndLine}
+        >
+          Copy absolute path and line number
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function CodeViewer({ code, language, fileName, filePath, absolutePath }: CodeViewerProps) {
   const [html, setHtml] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [popover, setPopover] = useState<LinePopoverState | null>(null);
 
   const lang = language || detectLanguage(fileName);
   const trimmedCode = stripTrailingNewline(code);
@@ -115,8 +187,29 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
                 <div
                   key={i}
                   data-line-number={i + 1}
-                  className="text-xs text-gray-500 leading-5 h-5 font-mono"
+                  className={`relative text-xs text-gray-500 leading-5 h-5 font-mono group${filePath ? " cursor-pointer" : ""}`}
+                  onClick={
+                    filePath
+                      ? (e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setPopover({
+                            lineNumber: i + 1,
+                            top: rect.top,
+                            left: rect.right + 4,
+                          });
+                        }
+                      : undefined
+                  }
                 >
+                  {filePath && (
+                    <span className="absolute -left-2 top-0.5 h-4 flex items-center justify-center rounded bg-gray-200 px-0.5 opacity-0 group-hover:opacity-100 text-gray-500">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                        <circle cx="3" cy="8" r="1.5" />
+                        <circle cx="8" cy="8" r="1.5" />
+                        <circle cx="13" cy="8" r="1.5" />
+                      </svg>
+                    </span>
+                  )}
                   {i + 1}
                 </div>
               ))}
@@ -127,6 +220,16 @@ export function CodeViewer({ code, language, fileName }: CodeViewerProps) {
             />
         </div>
       </div>
+      {popover && filePath && (
+        <LineNumberPopover
+          filePath={filePath}
+          absolutePath={absolutePath}
+          lineNumber={popover.lineNumber}
+          top={popover.top}
+          left={popover.left}
+          onClose={() => setPopover(null)}
+        />
+      )}
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function CommitListView() {
     <Layout>
       <div className="mx-auto p-4" style={{ maxWidth: "1000px" }}>
         <div className="mb-4">
-          <Breadcrumb items={breadcrumbItems} />
+          <Breadcrumb items={breadcrumbItems} size="base" />
           <h2 className="text-sm text-[#636c76] mt-2">
             Commits between{" "}
             <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">

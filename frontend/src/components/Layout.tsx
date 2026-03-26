@@ -27,11 +27,13 @@ interface BreadcrumbItem {
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
+  size?: "sm" | "base" | "lg";
 }
 
-export function Breadcrumb({ items }: BreadcrumbProps) {
+export function Breadcrumb({ items, size = "sm" }: BreadcrumbProps) {
+  const textSize = size === "lg" ? "text-lg" : size === "base" ? "text-base" : "text-sm";
   return (
-    <nav className="flex items-center gap-1 text-sm">
+    <nav className={`flex items-center gap-1 ${textSize}`}>
       {items.map((item, i) => (
         <span key={i} className="flex items-center gap-1">
           {i > 0 && <span className="text-gray-400">/</span>}

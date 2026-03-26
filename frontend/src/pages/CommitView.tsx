@@ -42,7 +42,7 @@ export function CommitView() {
     <Layout>
       <div className="mx-auto p-4" style={{ maxWidth: "1600px" }}>
         <div className="mb-4">
-          <Breadcrumb items={breadcrumbItems} />
+          <Breadcrumb items={breadcrumbItems} size="base" />
           {commit && (
             <div className="mt-2">
               <h2 className="text-lg font-semibold text-[#1f2328]">

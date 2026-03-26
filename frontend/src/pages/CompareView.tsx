@@ -54,7 +54,7 @@ export function CompareView() {
     <Layout>
       <div className="mx-auto p-4" style={{ maxWidth: "1600px" }}>
         <div className="mb-4">
-          <Breadcrumb items={breadcrumbItems} />
+          <Breadcrumb items={breadcrumbItems} size="base" />
           <div className="flex items-center gap-4 mt-2">
             <h2 className="text-sm text-[#636c76]">
               Comparing{" "}

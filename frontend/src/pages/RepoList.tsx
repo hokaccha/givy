@@ -55,7 +55,7 @@ export function RepoList() {
           <div className="mb-4">
             <Breadcrumb items={[
               { label: owner },
-            ]} />
+            ]} size="lg" />
           </div>
         )}
         <div className="flex items-baseline justify-between mb-6">

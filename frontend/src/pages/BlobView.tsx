@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { CodeViewer } from "../components/CodeViewer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
 import { ImageViewer } from "../components/ImageViewer";
 import { BinaryViewer } from "../components/BinaryViewer";
-import { getBlob } from "../api/client";
+import { getBlob, getServerInfo } from "../api/client";
 import type { BlobResponse } from "../api/client";
 
 const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp"]);
@@ -29,6 +29,11 @@ export function BlobView() {
   const [blob, setBlob] = useState<BlobResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [rootDir, setRootDir] = useState<string | null>(null);
+
+  useEffect(() => {
+    getServerInfo().then((info) => setRootDir(info.rootDir));
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -56,6 +61,13 @@ export function BlobView() {
     }
   });
 
+  const [copied, setCopied] = useState(false);
+  const copyPath = useCallback(() => {
+    navigator.clipboard.writeText(path);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [path]);
+
   function renderContent() {
     if (!blob) return null;
 
@@ -70,14 +82,31 @@ export function BlobView() {
       return <MarkdownViewer content={blob.content} />;
     }
 
-    return <CodeViewer code={blob.content} language="" fileName={fileName} />;
+    const absPath = rootDir ? `${rootDir}/${owner}/${repo}/${path}` : undefined;
+    return <CodeViewer code={blob.content} language="" fileName={fileName} filePath={path} absolutePath={absPath} />;
   }
 
   return (
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Breadcrumb items={breadcrumbItems} />
+        <div className="flex items-center gap-2 mb-4">
+          <Breadcrumb items={breadcrumbItems} size="base" />
+          <button
+            onClick={copyPath}
+            className="text-gray-400 hover:text-gray-600 cursor-pointer relative"
+            title="Copy path"
+          >
+            {copied ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" />
+                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" />
+              </svg>
+            )}
+          </button>
         </div>
 
         {loading && <p className="text-gray-500">Loading...</p>}

@@ -27,7 +27,7 @@ export function TreeView() {
 
   const breadcrumbItems: Array<{ label: string; href?: string }> = [
     { label: owner, href: `/${owner}` },
-    { label: repo, href: `/${owner}/${repo}` },
+    { label: repo, href: path ? `/${owner}/${repo}` : undefined },
   ];
   if (path) {
     const segments = path.split("/");
@@ -48,7 +48,7 @@ export function TreeView() {
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
         <div className="flex items-center justify-between gap-4 mb-4">
-          <Breadcrumb items={breadcrumbItems} />
+          <Breadcrumb items={breadcrumbItems} size="lg" />
           {!path && <ReviewLauncher owner={owner} repo={repo} />}
         </div>
 
