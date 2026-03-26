@@ -367,9 +367,9 @@ function InlineCommentRow({
   return (
     <tr>
       {Array.from({ length: gutterCols }).map((_, i) => (
-        <td key={i} className="bg-[#f6f8fa] border-t border-b border-[#d0d7de]" />
+        <td key={i} />
       ))}
-      <td colSpan={contentCols} className="bg-[#f6f8fa] border-t border-b border-[#d0d7de]">
+      <td colSpan={contentCols} className="border-t border-b border-[#d0d7de]">
         <div className="py-2 pr-4 max-w-[700px]">
           {lineComments.map((c) => (
             <CommentDisplay

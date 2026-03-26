@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:6271",
+    baseURL: "http://localhost:6272",
     trace: "on-first-retry",
   },
   projects: [
@@ -19,8 +19,8 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "cd .. && go run . serve ./frontend/e2e/fixtures/repos --port 6271",
-    port: 6271,
+      "cd .. && go run . serve ./frontend/e2e/fixtures/repos --port 6272",
+    port: 6272,
     reuseExistingServer: !process.env.CI,
   },
 });

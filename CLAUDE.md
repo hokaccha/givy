@@ -9,7 +9,7 @@ make dev              # Start Go backend + Vite dev server concurrently
 # Testing
 make test             # Go tests: go test ./...
 make test-frontend    # Frontend unit tests: pnpm --dir frontend test
-make test-e2e         # Playwright E2E tests (do NOT kill port 6271 if make dev is running)
+make test-e2e         # Playwright E2E tests (uses port 6272, separate from dev server)
 make lint             # All linters: golangci-lint + eslint + prettier
 
 # Building

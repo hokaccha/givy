@@ -147,9 +147,5 @@ cd frontend && pnpm test -- --watch
 
 ### E2E tests and `make dev`
 
-Playwright's `webServer` config starts its own givy server on port 6271.
-Both `make dev` and E2E tests use the same port.
-
-- If `make dev` is already running, Playwright reuses it (`reuseExistingServer: true` in local mode) and does **not** kill it after tests finish.
-- If `make dev` is not running, Playwright spawns its own server and terminates it after tests.
-- **Do not manually kill port 6271** (e.g. `lsof -ti :6271 | xargs kill`) before running E2E tests while `make dev` is active — this kills the dev server and leaves it dead after tests complete.
+The dev server (`make dev`) runs on port 6271. E2E tests use a separate port (6272)
+so they can run concurrently without conflict. This is configured in `playwright.config.ts`.
