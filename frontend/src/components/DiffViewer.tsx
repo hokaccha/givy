@@ -13,6 +13,7 @@ interface DiffViewerProps {
   onUpdateComment: (id: string, body: string) => void;
   onDeleteComment: (id: string) => void;
   onCopyAllPrompts: () => void;
+  onClearAllComments: () => void;
 }
 
 function fileAdditions(file: DiffFile): number {
@@ -30,6 +31,7 @@ export function DiffViewer({
   onUpdateComment,
   onDeleteComment,
   onCopyAllPrompts,
+  onClearAllComments,
 }: DiffViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("givy:viewMode");
@@ -63,21 +65,36 @@ export function DiffViewer({
             <span className="text-[#cf222e] font-semibold">{totalDeletions} deletions</span>.
           </div>
           <div className="flex items-center gap-2">
-            <CopyPromptButton label="Copy All Prompt" onClick={onCopyAllPrompts} />
             <div className="inline-flex rounded-md border border-[#d0d7de] overflow-hidden">
               <button
                 onClick={() => changeViewMode("split")}
-                className={`px-3 py-1 text-xs font-medium ${viewMode === "split" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
+                className={`px-3 py-1.5 text-sm font-medium cursor-pointer ${viewMode === "split" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
               >
                 Split
               </button>
               <button
                 onClick={() => changeViewMode("unified")}
-                className={`px-3 py-1 text-xs font-medium border-l border-[#d0d7de] ${viewMode === "unified" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
+                className={`px-3 py-1.5 text-sm font-medium border-l border-[#d0d7de] cursor-pointer ${viewMode === "unified" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
               >
                 Unified
               </button>
             </div>
+            <CopyPromptButton label="Copy All Comments" onClick={onCopyAllPrompts} />
+            {comments.length > 0 && (
+              <button
+                onClick={() => {
+                  if (window.confirm("Clear all comments?")) {
+                    onClearAllComments();
+                  }
+                }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-[#ffebe9] hover:text-[#cf222e] hover:border-[#cf222e] cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Clear All Comments
+              </button>
+            )}
           </div>
         </div>
 
@@ -374,7 +391,7 @@ function InlineCommentRow({
   if (!commentForm && lineComments.length === 0) return null;
 
   const commentContent = (
-    <div className="py-2 px-4 max-w-[700px]">
+    <div className="py-2 px-4 max-w-[700px] font-sans">
       {lineComments.map((c) => (
         <CommentDisplay
           key={c.id}

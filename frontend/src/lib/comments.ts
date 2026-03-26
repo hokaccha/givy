@@ -14,6 +14,7 @@ export interface CommentStore {
   addComment(key: string, comment: Omit<Comment, "id" | "createdAt" | "updatedAt">): Comment;
   updateComment(key: string, id: string, body: string): Comment | null;
   deleteComment(key: string, id: string): boolean;
+  clearAll(key: string): void;
 }
 
 const STORAGE_PREFIX = "givy:comments:";
@@ -94,7 +95,11 @@ export function createCommentStore(storage: Storage = localStorage): CommentStor
     return true;
   }
 
-  return { getComments, addComment, updateComment, deleteComment };
+  function clearAll(key: string): void {
+    storage.removeItem(storageKey(key));
+  }
+
+  return { getComments, addComment, updateComment, deleteComment, clearAll };
 }
 
 /**

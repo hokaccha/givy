@@ -48,6 +48,11 @@ export function useComments(
     [key, refresh]
   );
 
+  const clearAll = useCallback(() => {
+    store.clearAll(key);
+    refresh();
+  }, [key, refresh]);
+
   const getFileComments = useCallback(
     (filePath: string) => comments.filter((c) => c.filePath === filePath),
     [comments]
@@ -87,6 +92,7 @@ export function useComments(
     deleteComment,
     getFileComments,
     copyPrompt,
+    clearAll,
     copyAllPrompts,
   };
 }

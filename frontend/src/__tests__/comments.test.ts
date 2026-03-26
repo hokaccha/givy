@@ -153,6 +153,27 @@ describe("CommentStore", () => {
     expect(comments).toHaveLength(2);
   });
 
+  it("clears all comments for a key", () => {
+    store.addComment(key, {
+      filePath: "file1.go",
+      startLine: 1,
+      endLine: 1,
+      side: "right",
+      body: "Comment 1",
+    });
+    store.addComment(key, {
+      filePath: "file2.go",
+      startLine: 2,
+      endLine: 2,
+      side: "right",
+      body: "Comment 2",
+    });
+
+    expect(store.getComments(key)).toHaveLength(2);
+    store.clearAll(key);
+    expect(store.getComments(key)).toHaveLength(0);
+  });
+
   it("handles corrupted storage data gracefully", () => {
     storage.setItem(`givy:comments:${key}`, "not valid json");
     expect(store.getComments(key)).toEqual([]);

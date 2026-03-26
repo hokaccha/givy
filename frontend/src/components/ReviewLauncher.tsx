@@ -59,7 +59,7 @@ export function ReviewLauncher({ owner, repo }: ReviewLauncherProps) {
       <button
         onClick={handleReview}
         disabled={!base || !head || base === head}
-        className="ml-1 px-4 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="ml-1 px-4 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       >
         Compare
       </button>

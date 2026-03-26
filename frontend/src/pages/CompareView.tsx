@@ -37,6 +37,7 @@ export function CompareView() {
     addComment,
     updateComment,
     deleteComment,
+    clearAll,
     copyAllPrompts,
   } = useComments(owner, repo, base, head);
 
@@ -86,6 +87,7 @@ export function CompareView() {
             onAddComment={addComment}
             onUpdateComment={updateComment}
             onDeleteComment={deleteComment}
+            onClearAllComments={clearAll}
             onCopyAllPrompts={() =>
               copyAllPrompts(diffFiles.map((f) => ({ filePath: f.newPath })))
             }

@@ -108,7 +108,7 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
         </button>
         <button
           onClick={onDelete}
-          className="px-3 py-1 text-xs border border-[#cf222e] rounded-md text-[#cf222e] bg-white hover:bg-[#ffebe9] cursor-pointer"
+          className="px-3 py-1 text-xs border border-gray-300 rounded-md hover:bg-[#ffebe9] hover:text-[#cf222e] hover:border-[#cf222e] cursor-pointer"
         >
           Delete
         </button>
