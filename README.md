@@ -92,6 +92,25 @@ The diff view provides:
 - **Copy Prompt** — Export all comments as formatted text, useful for feeding back to AI coding agents
 - **Clear All Comments** — Remove all comments at once when starting a new review
 
+### Inline review comments
+
+Click the `+` icon in the gutter to add a comment on any line. Comments are stored in your browser's localStorage and persist across page reloads.
+
+![Review Comments](assets/screenshots/review-comments.png)
+
+### Copy Prompt for AI agents
+
+After writing review comments, click **"Copy All Comments"** to copy all comments as a structured prompt. The output includes file paths, line numbers, and your review text — ready to paste into an AI coding agent (e.g., Claude Code, Cursor, Copilot) for automated fixes.
+
+Example output:
+
+```markdown
+## internal/git/repo.go
+
+- **Line 10** (right): The constant value of 1000 seems arbitrary. Should we make this configurable?
+- **Line 16** (right): The doc comment mentions MaxRepos but the function doesn't actually enforce the limit.
+```
+
 ### View working directory changes
 
 The changes view also supports viewing unstaged and staged changes directly, with tabs at the top:
