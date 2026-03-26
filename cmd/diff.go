@@ -10,28 +10,28 @@ import (
 )
 
 var (
-	reviewPort    int
-	reviewRootDir string
+	diffPort    int
+	diffRootDir string
 )
 
 func init() {
-	reviewCmd.Flags().IntVar(&reviewPort, "port", 6271, "server port")
-	reviewCmd.Flags().StringVar(&reviewRootDir, "root", "", "root directory (same as serve argument)")
-	rootCmd.AddCommand(reviewCmd)
+	diffCmd.Flags().IntVar(&diffPort, "port", 6271, "server port")
+	diffCmd.Flags().StringVar(&diffRootDir, "root", "", "root directory (same as serve argument)")
+	rootCmd.AddCommand(diffCmd)
 }
 
-var reviewCmd = &cobra.Command{
-	Use:   "review [base...head | branch]",
-	Short: "Open the review/diff view in the browser",
-	Long: `Open the givy review view in the default browser.
+var diffCmd = &cobra.Command{
+	Use:   "diff [base...head | branch]",
+	Short: "Open the diff view in the browser",
+	Long: `Open the givy diff view in the default browser.
 
 Usage:
-  givy review                          # Compare current branch against default branch
-  givy review feature/branch           # Compare feature/branch against default branch
-  givy review main...feature/branch    # Compare specific base and head`,
+  givy diff                          # Compare current branch against default branch
+  givy diff feature/branch           # Compare feature/branch against default branch
+  givy diff main...feature/branch    # Compare specific base and head`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
-		rootDir := reviewRootDir
+		rootDir := diffRootDir
 		var err error
 
 		// Get current directory's repo info
@@ -70,7 +70,7 @@ Usage:
 			return err
 		}
 
-		url := fmt.Sprintf("http://localhost:%d/%s/%s/compare/%s...%s", reviewPort, owner, repo, base, head)
+		url := fmt.Sprintf("http://localhost:%d/%s/%s/compare/%s...%s", diffPort, owner, repo, base, head)
 		fmt.Println(url)
 		return openBrowser(url)
 	},

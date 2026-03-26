@@ -41,10 +41,10 @@ Users reach the compare/review view in two ways:
    component shows base/head branch selectors. Clicking "Compare" navigates
    to `/:owner/:repo/compare/base...head`.
 
-2. **CLI**: `givy review [spec]` opens the compare view in the browser.
-   - `givy review` — current branch vs default branch
-   - `givy review feature/x` — feature/x vs default branch
-   - `givy review main...feature/x` — explicit base and head
+2. **CLI**: `givy diff [spec]` opens the compare view in the browser.
+   - `givy diff` — current branch vs default branch
+   - `givy diff feature/x` — feature/x vs default branch
+   - `givy diff main...feature/x` — explicit base and head
 
 3. **CLI**: `givy open <commit-id>` opens the commit diff view in the browser.
    - Detects commit hashes (7-40 hex characters) and opens the commit view.
