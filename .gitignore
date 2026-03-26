@@ -18,6 +18,9 @@ frontend/.vite/
 .DS_Store
 Thumbs.db
 
+# Playwright CLI
+.playwright-cli/
+
 # Test
 frontend/test-results/
 frontend/playwright-report/
