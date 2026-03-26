@@ -9,6 +9,8 @@
 | `/:owner/:repo/tree/*` | TreeView | Subdirectory listing |
 | `/:owner/:repo/blob/*` | BlobView | File content viewer |
 | `/:owner/:repo/compare/:spec` | CompareView | Diff between two refs |
+| `/:owner/:repo/commit/:commitId` | CommitView | Single commit diff (no review) |
+| `/:owner/:repo/commits/:spec` | CommitListView | List commits between two refs |
 
 ## URL Examples
 
@@ -18,6 +20,8 @@
 /hokaccha/givy/tree/internal/git           → Subdirectory listing
 /hokaccha/givy/blob/README.md              → File viewer
 /hokaccha/givy/compare/main...feature/review → Diff view
+/hokaccha/givy/commit/abc1234              → Single commit diff
+/hokaccha/givy/commits/main...feature/review → Commit list
 ```
 
 ## Design Decision: Filesystem-Based Browsing
@@ -41,6 +45,9 @@ Users reach the compare/review view in two ways:
    - `givy review` — current branch vs default branch
    - `givy review feature/x` — feature/x vs default branch
    - `givy review main...feature/x` — explicit base and head
+
+3. **CLI**: `givy open <commit-id>` opens the commit diff view in the browser.
+   - Detects commit hashes (7-40 hex characters) and opens the commit view.
 
 ## API Routes
 

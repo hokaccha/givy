@@ -23,68 +23,127 @@ func init() {
 }
 
 var openCmd = &cobra.Command{
-	Use:   "open <path>",
-	Short: "Open a file in the givy viewer",
-	Long:  "Open a file in the default browser via the givy web interface.",
-	Args:  cobra.ExactArgs(1),
+	Use:   "open <path | commit-id>",
+	Short: "Open a file or commit in the givy viewer",
+	Long: `Open a file or commit in the default browser via the givy web interface.
+
+If the argument looks like a commit hash (hex string of 7+ characters),
+opens the commit diff view. Otherwise, opens the file/directory viewer.`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
-		targetPath, err := filepath.Abs(args[0])
-		if err != nil {
-			return fmt.Errorf("resolve path: %w", err)
+		arg := args[0]
+
+		// Check if argument looks like a commit hash
+		if isCommitHash(arg) {
+			return openCommit(arg)
 		}
 
-		rootDir := openRootDir
-		if rootDir == "" {
-			// Try to infer root dir from the path structure
-			// Walk up from the target looking for the owner/repo/.git pattern
-			rootDir, err = inferRootDir(targetPath)
-			if err != nil {
-				return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
-			}
-		} else {
-			rootDir, err = filepath.Abs(rootDir)
-			if err != nil {
-				return fmt.Errorf("resolve root: %w", err)
-			}
-		}
-
-		// The path relative to root should be owner/repo/...rest
-		relPath, err := filepath.Rel(rootDir, targetPath)
-		if err != nil {
-			return fmt.Errorf("compute relative path: %w", err)
-		}
-
-		parts := strings.SplitN(relPath, string(filepath.Separator), 3)
-		if len(parts) < 2 {
-			return fmt.Errorf("path must be under <root>/<owner>/<repo>/..., got: %s", relPath)
-		}
-
-		owner := parts[0]
-		repo := parts[1]
-		filePath := ""
-		if len(parts) == 3 {
-			filePath = parts[2]
-		}
-
-		var url string
-		if filePath == "" {
-			url = fmt.Sprintf("http://localhost:%d/%s/%s", openPort, owner, repo)
-		} else {
-			// Determine if it's a file or directory
-			info, err := os.Stat(targetPath)
-			if err != nil {
-				return fmt.Errorf("stat %s: %w", targetPath, err)
-			}
-			routeType := "blob"
-			if info.IsDir() {
-				routeType = "tree"
-			}
-			url = fmt.Sprintf("http://localhost:%d/%s/%s/%s/%s", openPort, owner, repo, routeType, filePath)
-		}
-
-		fmt.Println(url)
-		return openBrowser(url)
+		return openPath(arg)
 	},
+}
+
+// isCommitHash returns true if the string looks like a git commit hash
+// (7-40 hex characters).
+func isCommitHash(s string) bool {
+	if len(s) < 7 || len(s) > 40 {
+		return false
+	}
+	for _, c := range s {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+			return false
+		}
+	}
+	return true
+}
+
+func openCommit(commitID string) error {
+	cwd, err := filepath.Abs(".")
+	if err != nil {
+		return fmt.Errorf("get cwd: %w", err)
+	}
+
+	rootDir := openRootDir
+	if rootDir == "" {
+		rootDir, err = inferRootDir(cwd)
+		if err != nil {
+			return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
+		}
+	} else {
+		rootDir, err = filepath.Abs(rootDir)
+		if err != nil {
+			return fmt.Errorf("resolve root: %w", err)
+		}
+	}
+
+	relPath, err := filepath.Rel(rootDir, cwd)
+	if err != nil {
+		return fmt.Errorf("compute relative path: %w", err)
+	}
+	parts := strings.SplitN(relPath, string(filepath.Separator), 3)
+	if len(parts) < 2 {
+		return fmt.Errorf("must be inside a repo directory (<root>/<owner>/<repo>/...)")
+	}
+	owner := parts[0]
+	repo := parts[1]
+
+	url := fmt.Sprintf("http://localhost:%d/%s/%s/commit/%s", openPort, owner, repo, commitID)
+	fmt.Println(url)
+	return openBrowser(url)
+}
+
+func openPath(target string) error {
+	targetPath, err := filepath.Abs(target)
+	if err != nil {
+		return fmt.Errorf("resolve path: %w", err)
+	}
+
+	rootDir := openRootDir
+	if rootDir == "" {
+		rootDir, err = inferRootDir(targetPath)
+		if err != nil {
+			return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
+		}
+	} else {
+		rootDir, err = filepath.Abs(rootDir)
+		if err != nil {
+			return fmt.Errorf("resolve root: %w", err)
+		}
+	}
+
+	relPath, err := filepath.Rel(rootDir, targetPath)
+	if err != nil {
+		return fmt.Errorf("compute relative path: %w", err)
+	}
+
+	parts := strings.SplitN(relPath, string(filepath.Separator), 3)
+	if len(parts) < 2 {
+		return fmt.Errorf("path must be under <root>/<owner>/<repo>/..., got: %s", relPath)
+	}
+
+	owner := parts[0]
+	repo := parts[1]
+	filePath := ""
+	if len(parts) == 3 {
+		filePath = parts[2]
+	}
+
+	var url string
+	if filePath == "" {
+		url = fmt.Sprintf("http://localhost:%d/%s/%s", openPort, owner, repo)
+	} else {
+		info, err := os.Stat(targetPath)
+		if err != nil {
+			return fmt.Errorf("stat %s: %w", targetPath, err)
+		}
+		routeType := "blob"
+		if info.IsDir() {
+			routeType = "tree"
+		}
+		url = fmt.Sprintf("http://localhost:%d/%s/%s/%s/%s", openPort, owner, repo, routeType, filePath)
+	}
+
+	fmt.Println(url)
+	return openBrowser(url)
 }
 
 // inferRootDir walks up the directory tree to find the root repos directory.

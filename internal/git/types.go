@@ -50,3 +50,23 @@ type DiffResult struct {
 		Deletions int `json:"deletions"`
 	} `json:"stats"`
 }
+
+// CommitInfo represents a single commit.
+type CommitInfo struct {
+	Hash    string `json:"hash"`
+	Subject string `json:"subject"`
+	Author  string `json:"author"`
+	Date    string `json:"date"`
+}
+
+// CommitDiffResult represents the diff of a single commit.
+type CommitDiffResult struct {
+	Commit CommitInfo `json:"commit"`
+	Files  []DiffStat `json:"files"`
+	Patch  string     `json:"patch"`
+	Stats  struct {
+		Files     int `json:"files"`
+		Additions int `json:"additions"`
+		Deletions int `json:"deletions"`
+	} `json:"stats"`
+}

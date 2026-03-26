@@ -64,3 +64,36 @@ git -C <repo> diff --numstat <base>...<head>
 # 7	3	src/main.go
 # -	-	binary-file.png  (binary files show - for both)
 ```
+
+## Show Commit
+
+```bash
+git -C <repo> log -1 --format='%H%n%s%n%an%n%aI' <commit-id>
+# Output:
+# abc123...  (full hash)
+# Fix bug in handler  (subject)
+# hokaccha  (author name)
+# 2025-01-15T10:30:00+09:00  (author date ISO)
+```
+
+## Commit Diff
+
+```bash
+git -C <repo> diff-tree -p <commit-id>
+# Output: standard unified diff for the commit
+```
+
+## Commit Numstat
+
+```bash
+git -C <repo> diff-tree --numstat -r <commit-id>
+# Output (tab-separated, same format as diff --numstat)
+```
+
+## List Commits Between Refs
+
+```bash
+git -C <repo> log --format='%H%x00%s%x00%an%x00%aI' <base>...<head>
+# Output (NUL-separated fields, one commit per line):
+# abc123...\0Fix bug\0hokaccha\02025-01-15T10:30:00+09:00
+```

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { DiffViewer } from "../components/DiffViewer";
 import { getCompare } from "../api/client";
@@ -55,12 +55,20 @@ export function CompareView() {
       <div className="mx-auto p-4" style={{ maxWidth: "1600px" }}>
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
-          <h2 className="text-sm text-[#636c76] mt-2">
-            Comparing{" "}
-            <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">{base}</span>
-            {" "}...{" "}
-            <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">{head}</span>
-          </h2>
+          <div className="flex items-center gap-4 mt-2">
+            <h2 className="text-sm text-[#636c76]">
+              Comparing{" "}
+              <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">{base}</span>
+              {" "}...{" "}
+              <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">{head}</span>
+            </h2>
+            <Link
+              to={`/${owner}/${repo}/commits/${base}...${head}`}
+              className="text-sm text-[#0969da] hover:underline"
+            >
+              View commits
+            </Link>
+          </div>
         </div>
 
         {loading && <p className="text-[#636c76]">Loading...</p>}

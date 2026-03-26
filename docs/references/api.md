@@ -156,6 +156,56 @@ that uses git objects rather than the filesystem.
 }
 ```
 
+## Commits
+
+### `GET /api/repos/:owner/:repo/commits/:commitId`
+
+Get diff for a single commit.
+
+**Response:**
+```json
+{
+  "commit": {
+    "hash": "abc1234...",
+    "subject": "Fix bug in handler",
+    "author": "hokaccha",
+    "date": "2025-01-15T10:30:00+09:00"
+  },
+  "files": [
+    {
+      "path": "src/handler.go",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 2
+    }
+  ],
+  "patch": "unified diff text...",
+  "stats": {
+    "files": 1,
+    "additions": 5,
+    "deletions": 2
+  }
+}
+```
+
+### `GET /api/repos/:owner/:repo/compare-commits/:base...:head`
+
+List commits between two refs.
+
+**Response:**
+```json
+{
+  "commits": [
+    {
+      "hash": "abc1234...",
+      "subject": "Add new feature",
+      "author": "hokaccha",
+      "date": "2025-01-15T10:30:00+09:00"
+    }
+  ]
+}
+```
+
 ## Error Responses
 
 All errors return:

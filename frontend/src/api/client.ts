@@ -114,3 +114,46 @@ export function getCompare(
     `/repos/${owner}/${repo}/compare/${base}...${head}`
   );
 }
+
+export interface CommitInfo {
+  hash: string;
+  subject: string;
+  author: string;
+  date: string;
+}
+
+export interface CommitDiffResponse {
+  commit: CommitInfo;
+  files: DiffStat[];
+  patch: string;
+  stats: {
+    files: number;
+    additions: number;
+    deletions: number;
+  };
+}
+
+export interface CommitListResponse {
+  commits: CommitInfo[];
+}
+
+export function getCommit(
+  owner: string,
+  repo: string,
+  commitId: string
+): Promise<CommitDiffResponse> {
+  return fetchJSON<CommitDiffResponse>(
+    `/repos/${owner}/${repo}/commits/${commitId}`
+  );
+}
+
+export function getCompareCommits(
+  owner: string,
+  repo: string,
+  base: string,
+  head: string
+): Promise<CommitListResponse> {
+  return fetchJSON<CommitListResponse>(
+    `/repos/${owner}/${repo}/compare-commits/${base}...${head}`
+  );
+}
