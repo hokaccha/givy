@@ -21,12 +21,14 @@ func init() {
 }
 
 var diffCmd = &cobra.Command{
-	Use:   "diff [base...head | branch]",
+	Use:   "diff [base...head | branch | @staged | @unstaged]",
 	Short: "Open the diff view in the browser",
 	Long: `Open the givy diff view in the default browser.
 
 Usage:
   givy diff                          # Compare current branch against default branch
+  givy diff @unstaged                # Show unstaged changes
+  givy diff @staged                  # Show staged changes
   givy diff feature/branch           # Compare feature/branch against default branch
   givy diff main...feature/branch    # Compare specific base and head`,
 	Args: cobra.MaximumNArgs(1),
@@ -64,6 +66,13 @@ Usage:
 		owner := parts[0]
 		repo := parts[1]
 		repoDir := filepath.Join(rootDir, owner, repo)
+
+		// Handle @unstaged / @staged shortcuts
+		if len(args) == 1 && (args[0] == "@unstaged" || args[0] == "@staged") {
+			url := fmt.Sprintf("http://localhost:%d/%s/%s/changes/%s", diffPort, owner, repo, args[0])
+			fmt.Println(url)
+			return openBrowser(url)
+		}
 
 		base, head, err := resolveCompareSpec(repoDir, args)
 		if err != nil {
