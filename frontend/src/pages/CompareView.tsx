@@ -7,6 +7,7 @@ import { parseDiff } from "../lib/diff-parser";
 import { useComments } from "../hooks/useComments";
 import type { DiffFile } from "../lib/diff-parser";
 import type { DiffStat } from "../api/client";
+import { useTitle } from "../hooks/useTitle";
 
 export function CompareView() {
   const params = useParams();
@@ -18,6 +19,8 @@ export function CompareView() {
   const dotIndex = spec.indexOf("...");
   const base = dotIndex >= 0 ? spec.slice(0, dotIndex) : spec;
   const head = dotIndex >= 0 ? spec.slice(dotIndex + 3) : "";
+
+  useTitle(`${base}...${head}`);
 
   const [diffFiles, setDiffFiles] = useState<DiffFile[]>([]);
   const [, setFileStats] = useState<DiffStat[]>([]);

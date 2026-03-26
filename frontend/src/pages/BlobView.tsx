@@ -7,6 +7,7 @@ import { ImageViewer } from "../components/ImageViewer";
 import { BinaryViewer } from "../components/BinaryViewer";
 import { getBlob, getServerInfo } from "../api/client";
 import type { BlobResponse } from "../api/client";
+import { useTitle } from "../hooks/useTitle";
 
 const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp"]);
 
@@ -25,6 +26,8 @@ export function BlobView() {
   const repo = params.repo!;
   const path = params["*"] || "";
   const fileName = path.split("/").pop() || "";
+
+  useTitle(path || fileName);
 
   const [blob, setBlob] = useState<BlobResponse | null>(null);
   const [loading, setLoading] = useState(true);

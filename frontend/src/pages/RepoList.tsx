@@ -3,9 +3,12 @@ import { Link, useParams } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { searchRepos, getServerInfo } from "../api/client";
 import type { Repo } from "../api/client";
+import { useTitle } from "../hooks/useTitle";
 
 export function RepoList() {
   const { owner } = useParams<{ owner?: string }>();
+  useTitle("");
+
   const [query, setQuery] = useState("");
   const [repos, setRepos] = useState<Repo[]>([]);
   const [totalCount, setTotalCount] = useState(0);

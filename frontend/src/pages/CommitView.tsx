@@ -6,12 +6,15 @@ import { getCommit } from "../api/client";
 import { parseDiff } from "../lib/diff-parser";
 import type { DiffFile } from "../lib/diff-parser";
 import type { CommitInfo } from "../api/client";
+import { useTitle } from "../hooks/useTitle";
 
 export function CommitView() {
   const params = useParams();
   const owner = params.owner!;
   const repo = params.repo!;
   const commitId = params.commitId!;
+
+  useTitle(commitId.slice(0, 7));
 
   const [diffFiles, setDiffFiles] = useState<DiffFile[]>([]);
   const [commit, setCommit] = useState<CommitInfo | null>(null);

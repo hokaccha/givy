@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { getCompareCommits } from "../api/client";
 import type { CommitInfo } from "../api/client";
+import { useTitle } from "../hooks/useTitle";
 
 export function CommitListView() {
   const params = useParams();
@@ -13,6 +14,8 @@ export function CommitListView() {
   const dotIndex = spec.indexOf("...");
   const base = dotIndex >= 0 ? spec.slice(0, dotIndex) : spec;
   const head = dotIndex >= 0 ? spec.slice(dotIndex + 3) : "";
+
+  useTitle(`${base}...${head}`);
 
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);

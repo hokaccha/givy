@@ -5,12 +5,15 @@ import { FileTree } from "../components/FileTree";
 import { ReviewLauncher } from "../components/ReviewLauncher";
 import { getTree } from "../api/client";
 import type { TreeEntry } from "../api/client";
+import { useTitle } from "../hooks/useTitle";
 
 export function TreeView() {
   const params = useParams();
   const owner = params.owner!;
   const repo = params.repo!;
   const path = params["*"] || "";
+
+  useTitle(path ? path : `${owner}/${repo}`);
 
   const [entries, setEntries] = useState<TreeEntry[]>([]);
   const [loading, setLoading] = useState(true);
