@@ -345,25 +345,23 @@ function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
 }
 
 function InlineCommentRow({
-  gutterTypes,
-  contentCols,
+  layout,
   commentForm,
   lineComments,
   onSubmitComment,
   onCancelComment,
   onUpdateComment,
   onDeleteComment,
-  splitLeftType,
 }: {
-  gutterTypes: DiffLine["type"][];
-  contentCols: number;
+  layout:
+    | { mode: "unified"; gutterTypes: DiffLine["type"][] }
+    | { mode: "split"; leftType: DiffLine["type"]; rightType: DiffLine["type"] };
   commentForm: DiffViewProps["commentForm"] | null;
   lineComments: Comment[];
   onSubmitComment: (body: string) => void;
   onCancelComment: () => void;
   onUpdateComment: (id: string, body: string) => void;
   onDeleteComment: (id: string) => void;
-  splitLeftType?: DiffLine["type"];
 }) {
   if (!commentForm && lineComments.length === 0) return null;
 
@@ -388,19 +386,24 @@ function InlineCommentRow({
     </div>
   );
 
+  if (layout.mode === "split") {
+    // Match split view column order: [left gutter | left content | right gutter | right content]
+    return (
+      <tr className="bg-white">
+        <td className={gutterClass(layout.leftType)} />
+        <td className={lineClass(layout.leftType)} />
+        <td className={gutterClass(layout.rightType)} />
+        <td>{commentContent}</td>
+      </tr>
+    );
+  }
+
   return (
     <tr className="bg-white">
-      {gutterTypes.map((type, i) => (
+      {layout.gutterTypes.map((type, i) => (
         <td key={i} className={gutterClass(type)} />
       ))}
-      {splitLeftType !== undefined ? (
-        <>
-          <td className={lineClass(splitLeftType)} />
-          <td>{commentContent}</td>
-        </>
-      ) : (
-        <td colSpan={contentCols}>{commentContent}</td>
-      )}
+      <td>{commentContent}</td>
     </tr>
   );
 }
@@ -502,9 +505,7 @@ function SplitDiffView({
                   </td>
                 </tr>
                 <InlineCommentRow
-                  gutterTypes={[leftType, rightType]}
-                  contentCols={2}
-                  splitLeftType={leftType}
+                  layout={{ mode: "split", leftType, rightType }}
                   commentForm={showForm ? commentForm : null}
                   lineComments={lineComments}
                   onSubmitComment={onSubmitComment}
@@ -573,8 +574,7 @@ function UnifiedDiffView({
                       </td>
                     </tr>
                     <InlineCommentRow
-                      gutterTypes={[line.type, line.type]}
-                      contentCols={1}
+                      layout={{ mode: "unified", gutterTypes: [line.type, line.type] }}
                       commentForm={showForm ? commentForm : null}
                       lineComments={lineComments}
                       onSubmitComment={onSubmitComment}
