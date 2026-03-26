@@ -8,6 +8,38 @@ import (
 	"github.com/hokaccha/givy/internal/git"
 )
 
+func diffUnstaged(rootDir string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		owner := chi.URLParam(r, "owner")
+		repo := chi.URLParam(r, "repo")
+		repoPath := git.RepoPath(rootDir, owner, repo)
+
+		result, err := git.DiffUnstaged(repoPath)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		writeJSON(w, http.StatusOK, result)
+	}
+}
+
+func diffStaged(rootDir string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		owner := chi.URLParam(r, "owner")
+		repo := chi.URLParam(r, "repo")
+		repoPath := git.RepoPath(rootDir, owner, repo)
+
+		result, err := git.DiffStaged(repoPath)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		writeJSON(w, http.StatusOK, result)
+	}
+}
+
 func compareDiff(rootDir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		owner := chi.URLParam(r, "owner")

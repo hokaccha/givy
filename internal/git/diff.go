@@ -40,6 +40,50 @@ func Compare(repoPath, base, head string) (*DiffResult, error) {
 	return result, nil
 }
 
+// DiffUnstaged generates a diff of unstaged changes (working tree vs index).
+func DiffUnstaged(repoPath string) (*DiffResult, error) {
+	return diffWorkingDir(repoPath, "worktree", "index")
+}
+
+// DiffStaged generates a diff of staged changes (index vs HEAD).
+func DiffStaged(repoPath string) (*DiffResult, error) {
+	return diffWorkingDir(repoPath, "staged", "index", "--cached")
+}
+
+func diffWorkingDir(repoPath, label, base string, extraArgs ...string) (*DiffResult, error) {
+	args := append([]string{"diff"}, extraArgs...)
+	patch, err := runGit(repoPath, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	numstatArgs := append([]string{"diff", "--numstat"}, extraArgs...)
+	numstat, err := runGit(repoPath, numstatArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	files := parseNumstat(numstat)
+
+	var totalAdditions, totalDeletions int
+	for _, f := range files {
+		totalAdditions += f.Additions
+		totalDeletions += f.Deletions
+	}
+
+	result := &DiffResult{
+		Base:  base,
+		Head:  label,
+		Files: files,
+		Patch: patch,
+	}
+	result.Stats.Files = len(files)
+	result.Stats.Additions = totalAdditions
+	result.Stats.Deletions = totalDeletions
+
+	return result, nil
+}
+
 // parseNumstat parses the output of `git diff --numstat`.
 // Format: <additions>\t<deletions>\t<path>
 func parseNumstat(output string) []DiffStat {

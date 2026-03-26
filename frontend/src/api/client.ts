@@ -115,6 +115,20 @@ export function getCompare(
   );
 }
 
+export function getDiffUnstaged(
+  owner: string,
+  repo: string,
+): Promise<DiffResponse> {
+  return fetchJSON<DiffResponse>(`/repos/${owner}/${repo}/diff/unstaged`);
+}
+
+export function getDiffStaged(
+  owner: string,
+  repo: string,
+): Promise<DiffResponse> {
+  return fetchJSON<DiffResponse>(`/repos/${owner}/${repo}/diff/staged`);
+}
+
 export interface CommitInfo {
   hash: string;
   subject: string;

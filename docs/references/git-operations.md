@@ -56,10 +56,26 @@ git -C <repo> diff <base>...<head>
 # Output: standard unified diff
 ```
 
+## Unstaged Diff (Working Tree vs Index)
+
+```bash
+git -C <repo> diff
+# Output: standard unified diff of unstaged changes
+```
+
+## Staged Diff (Index vs HEAD)
+
+```bash
+git -C <repo> diff --cached
+# Output: standard unified diff of staged changes
+```
+
 ## Diff with Numstat
 
 ```bash
 git -C <repo> diff --numstat <base>...<head>
+git -C <repo> diff --numstat              # unstaged
+git -C <repo> diff --numstat --cached     # staged
 # Output (tab-separated):
 # 7	3	src/main.go
 # -	-	binary-file.png  (binary files show - for both)

@@ -8,6 +8,7 @@
 | `/:owner/:repo` | TreeView | Repository root (directory listing) |
 | `/:owner/:repo/tree/*` | TreeView | Subdirectory listing |
 | `/:owner/:repo/blob/*` | BlobView | File content viewer |
+| `/:owner/:repo/changes` | ChangesView | Staged/unstaged working directory diff |
 | `/:owner/:repo/compare/:spec` | CompareView | Diff between two refs |
 | `/:owner/:repo/commit/:commitId` | CommitView | Single commit diff (no review) |
 | `/:owner/:repo/commits/:spec` | CommitListView | List commits between two refs |
@@ -19,6 +20,8 @@
 /hokaccha/givy                             → Root directory listing
 /hokaccha/givy/tree/internal/git           → Subdirectory listing
 /hokaccha/givy/blob/README.md              → File viewer
+/hokaccha/givy/changes                         → Working directory changes
+/hokaccha/givy/changes?tab=staged              → Staged changes
 /hokaccha/givy/compare/main...feature/review → Diff view
 /hokaccha/givy/commit/abc1234              → Single commit diff
 /hokaccha/givy/commits/main...feature/review → Commit list

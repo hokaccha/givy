@@ -5,6 +5,7 @@ import { BlobView } from "./pages/BlobView";
 import { CompareView } from "./pages/CompareView";
 import { CommitView } from "./pages/CommitView";
 import { CommitListView } from "./pages/CommitListView";
+import { ChangesView } from "./pages/ChangesView";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/:owner/:repo/commit/:commitId" element={<CommitView />} />
         <Route path="/:owner/:repo/commits/*" element={<CommitListView />} />
         <Route path="/:owner/:repo/compare/*" element={<CompareView />} />
+        <Route path="/:owner/:repo/changes" element={<ChangesView />} />
         <Route path="/:owner/:repo/blob/*" element={<BlobView />} />
         <Route path="/:owner/:repo/tree/*" element={<TreeView />} />
         <Route path="/:owner/:repo" element={<TreeView />} />

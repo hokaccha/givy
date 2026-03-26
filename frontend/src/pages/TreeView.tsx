@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { FileTree } from "../components/FileTree";
 import { ReviewLauncher } from "../components/ReviewLauncher";
@@ -75,7 +75,17 @@ export function TreeView() {
       <div className="max-w-5xl mx-auto p-6">
         <div className="flex items-center justify-between gap-4 mb-4">
           <Breadcrumb items={breadcrumbItems} size="lg" />
-          {!path && <ReviewLauncher owner={owner} repo={repo} />}
+          {!path && (
+            <div className="flex items-center gap-2">
+              <Link
+                to={`/${owner}/${repo}/changes`}
+                className="px-3 py-1.5 text-sm font-medium text-[#1f2328] bg-[#f6f8fa] border border-[#d1d9e0] rounded-md hover:bg-[#eaeef2]"
+              >
+                Working Changes
+              </Link>
+              <ReviewLauncher owner={owner} repo={repo} />
+            </div>
+          )}
         </div>
 
         {loading && <p className="text-gray-500 mt-4">Loading...</p>}

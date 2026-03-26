@@ -127,12 +127,25 @@ Get file content from the actual filesystem (not git objects).
 }
 ```
 
+## Working Directory Diff
+
+### `GET /api/repos/:owner/:repo/diff/unstaged`
+
+Get diff of unstaged changes (working tree vs index).
+
+**Response:** Same shape as compare endpoint (see below).
+
+### `GET /api/repos/:owner/:repo/diff/staged`
+
+Get diff of staged changes (index vs HEAD).
+
+**Response:** Same shape as compare endpoint (see below).
+
 ## Compare / Diff
 
 ### `GET /api/repos/:owner/:repo/compare/:base...:head`
 
-Get diff between two refs (branches, commits). This is the only endpoint
-that uses git objects rather than the filesystem.
+Get diff between two refs (branches, commits).
 
 **Response:**
 ```json
