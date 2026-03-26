@@ -10,8 +10,8 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-200 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          <Link to="/" className="text-xl font-bold text-gray-900 hover:text-gray-700">
-            givy
+          <Link to="/" className="hover:opacity-80">
+            <img src="/logo.png" alt="givy" className="h-7" />
           </Link>
         </div>
       </header>

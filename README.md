@@ -1,4 +1,6 @@
-# givy
+<p align="center">
+  <img src="assets/logo.png" alt="givy" width="300" />
+</p>
 
 A local GitHub-like git viewer with a web UI. Browse repositories, view files with syntax highlighting and markdown rendering, compare branches, and review diffs with inline comments.
 
