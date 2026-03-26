@@ -30,14 +30,20 @@ export function BlobView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [rootDir, setRootDir] = useState<string | null>(null);
+  const [prevFetchKey, setPrevFetchKey] = useState("");
+
+  const fetchKey = `${owner}/${repo}/${path}`;
+  if (prevFetchKey !== fetchKey) {
+    setPrevFetchKey(fetchKey);
+    setLoading(true);
+    setError(null);
+  }
 
   useEffect(() => {
     getServerInfo().then((info) => setRootDir(info.rootDir));
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
     getBlob(owner, repo, path)
       .then(setBlob)
       .catch((err) => setError(err.message))

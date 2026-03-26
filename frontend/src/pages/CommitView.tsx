@@ -17,10 +17,16 @@ export function CommitView() {
   const [commit, setCommit] = useState<CommitInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prevFetchKey, setPrevFetchKey] = useState("");
 
-  useEffect(() => {
+  const fetchKey = `${owner}/${repo}/${commitId}`;
+  if (prevFetchKey !== fetchKey) {
+    setPrevFetchKey(fetchKey);
     setLoading(true);
     setError(null);
+  }
+
+  useEffect(() => {
     getCommit(owner, repo, commitId)
       .then((data) => {
         setCommit(data.commit);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { stripTrailingNewline, detectLanguage } from "../components/CodeViewer";
+import { stripTrailingNewline, detectLanguage } from "../lib/code-utils";
 
 describe("stripTrailingNewline", () => {
   it("removes a single trailing newline", () => {

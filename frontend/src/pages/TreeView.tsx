@@ -15,10 +15,16 @@ export function TreeView() {
   const [entries, setEntries] = useState<TreeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prevFetchKey, setPrevFetchKey] = useState("");
 
-  useEffect(() => {
+  const fetchKey = `${owner}/${repo}/${path}`;
+  if (prevFetchKey !== fetchKey) {
+    setPrevFetchKey(fetchKey);
     setLoading(true);
     setError(null);
+  }
+
+  useEffect(() => {
     getTree(owner, repo, path)
       .then((data) => setEntries(data.entries ?? []))
       .catch((err) => setError(err.message))

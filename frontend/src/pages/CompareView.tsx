@@ -23,6 +23,14 @@ export function CompareView() {
   const [, setFileStats] = useState<DiffStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prevFetchKey, setPrevFetchKey] = useState("");
+
+  const fetchKey = `${owner}/${repo}/${base}/${head}`;
+  if (prevFetchKey !== fetchKey) {
+    setPrevFetchKey(fetchKey);
+    setLoading(true);
+    setError(null);
+  }
 
   const {
     comments,
@@ -33,8 +41,6 @@ export function CompareView() {
   } = useComments(owner, repo, base, head);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
     getCompare(owner, repo, base, head)
       .then((data) => {
         setFileStats(data.files);

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { codeToHtml } from "shiki";
+import { stripTrailingNewline, detectLanguage } from "../lib/code-utils";
 
 interface CodeViewerProps {
   code: string;
@@ -7,51 +8,6 @@ interface CodeViewerProps {
   fileName: string;
   filePath?: string;
   absolutePath?: string;
-}
-
-export function stripTrailingNewline(code: string): string {
-  return code.endsWith("\n") ? code.slice(0, -1) : code;
-}
-
-export function detectLanguage(fileName: string): string {
-  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
-  const map: Record<string, string> = {
-    ts: "typescript",
-    tsx: "tsx",
-    js: "javascript",
-    jsx: "jsx",
-    go: "go",
-    py: "python",
-    rb: "ruby",
-    rs: "rust",
-    java: "java",
-    kt: "kotlin",
-    swift: "swift",
-    c: "c",
-    cpp: "cpp",
-    h: "c",
-    hpp: "cpp",
-    cs: "csharp",
-    css: "css",
-    scss: "scss",
-    html: "html",
-    xml: "xml",
-    json: "json",
-    yaml: "yaml",
-    yml: "yaml",
-    toml: "toml",
-    sh: "bash",
-    bash: "bash",
-    zsh: "bash",
-    fish: "fish",
-    sql: "sql",
-    graphql: "graphql",
-    proto: "proto",
-    dockerfile: "dockerfile",
-    makefile: "makefile",
-    md: "markdown",
-  };
-  return map[ext] || "text";
 }
 
 interface LinePopoverState {
@@ -127,16 +83,21 @@ export function CodeViewer({ code, language, fileName, filePath, absolutePath }:
   const [html, setHtml] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [popover, setPopover] = useState<LinePopoverState | null>(null);
+  const [prevCodeKey, setPrevCodeKey] = useState("");
 
   const lang = language || detectLanguage(fileName);
   const trimmedCode = stripTrailingNewline(code);
+  const codeKey = `${trimmedCode}:${lang}`;
+  if (prevCodeKey !== codeKey) {
+    setPrevCodeKey(codeKey);
+    setLoading(true);
+  }
   const lines = trimmedCode.split("\n");
   const lineCount = lines.length;
   const lineNumberPx = lineCount >= 1000 ? 64 : lineCount >= 100 ? 56 : 48;
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     codeToHtml(trimmedCode, {
       lang,
       theme: "github-light",

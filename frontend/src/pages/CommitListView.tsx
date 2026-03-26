@@ -17,10 +17,16 @@ export function CommitListView() {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prevFetchKey, setPrevFetchKey] = useState("");
 
-  useEffect(() => {
+  const fetchKey = `${owner}/${repo}/${base}/${head}`;
+  if (prevFetchKey !== fetchKey) {
+    setPrevFetchKey(fetchKey);
     setLoading(true);
     setError(null);
+  }
+
+  useEffect(() => {
     getCompareCommits(owner, repo, base, head)
       .then((data) => setCommits(data.commits ?? []))
       .catch((err) => setError(err.message))

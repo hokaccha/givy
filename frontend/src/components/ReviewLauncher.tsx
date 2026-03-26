@@ -13,10 +13,16 @@ export function ReviewLauncher({ owner, repo }: ReviewLauncherProps) {
   const [loading, setLoading] = useState(true);
   const [base, setBase] = useState("");
   const [head, setHead] = useState("");
+  const [prevKey, setPrevKey] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchKey = `${owner}/${repo}`;
+  if (prevKey !== fetchKey) {
+    setPrevKey(fetchKey);
     setLoading(true);
+  }
+
+  useEffect(() => {
     listBranches(owner, repo)
       .then((data) => {
         setBranches(data);
@@ -94,14 +100,16 @@ function BranchSelector({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [highlightIndex, setHighlightIndex] = useState(0);
+  const [prevQuery, setPrevQuery] = useState(query);
 
   const filtered = branches.filter((b) =>
     b.name.toLowerCase().includes(query.toLowerCase()),
   );
 
-  useEffect(() => {
+  if (prevQuery !== query) {
+    setPrevQuery(query);
     setHighlightIndex(0);
-  }, [query]);
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
