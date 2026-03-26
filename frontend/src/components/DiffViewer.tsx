@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import type { DiffFile, DiffLine, DiffHunk } from "../lib/diff-parser";
 import type { Comment } from "../lib/comments";
 import { DiffCommentForm, CommentDisplay } from "./DiffComment";
@@ -298,6 +298,38 @@ function gutterClass(type: DiffLine["type"]): string {
   }
 }
 
+function GutterCell({
+  lineNumber,
+  side,
+  type,
+  clickable = false,
+  onClick,
+}: {
+  lineNumber: number | undefined;
+  side: "left" | "right";
+  type: DiffLine["type"];
+  clickable?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <td
+      data-line={lineNumber ?? ""}
+      data-side={side}
+      className={`group/gutter relative w-[1%] min-w-10 text-right px-2 py-0 select-none ${clickable ? "cursor-pointer" : ""} ${gutterClass(type)}`}
+      onClick={onClick}
+    >
+      {clickable && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 hidden group-hover/gutter:flex items-center justify-center w-5 h-5 bg-[#0969da] text-white rounded-md cursor-pointer z-10">
+          <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+            <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
+          </svg>
+        </span>
+      )}
+      {lineNumber ?? ""}
+    </td>
+  );
+}
+
 function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
   const text = `@@ -${hunk.header.oldStart},${hunk.header.oldCount} +${hunk.header.newStart},${hunk.header.newCount} @@ ${hunk.header.section}`;
   return (
@@ -312,36 +344,29 @@ function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
   );
 }
 
-function CommentsSection({
+function InlineCommentRow({
+  colSpan,
   commentForm,
-  comments,
+  lineComments,
   onSubmitComment,
   onCancelComment,
   onUpdateComment,
   onDeleteComment,
 }: {
-  commentForm: DiffViewProps["commentForm"];
-  comments: Comment[];
+  colSpan: number;
+  commentForm: DiffViewProps["commentForm"] | null;
+  lineComments: Comment[];
   onSubmitComment: (body: string) => void;
   onCancelComment: () => void;
   onUpdateComment: (id: string, body: string) => void;
   onDeleteComment: (id: string) => void;
 }) {
+  if (!commentForm && lineComments.length === 0) return null;
   return (
-    <>
-      {commentForm && (
-        <div className="px-4 border-t border-[#d0d7de]">
-          <DiffCommentForm
-            startLine={commentForm.startLine}
-            endLine={commentForm.endLine}
-            onSubmit={onSubmitComment}
-            onCancel={onCancelComment}
-          />
-        </div>
-      )}
-      {comments.length > 0 && (
-        <div className="px-4 pb-2 border-t border-[#d0d7de]">
-          {comments.map((c) => (
+    <tr>
+      <td colSpan={colSpan} className="bg-[#f6f8fa] border-t border-b border-[#d0d7de]">
+        <div className="px-4">
+          {lineComments.map((c) => (
             <CommentDisplay
               key={c.id}
               body={c.body}
@@ -349,9 +374,17 @@ function CommentsSection({
               onDelete={() => onDeleteComment(c.id)}
             />
           ))}
+          {commentForm && (
+            <DiffCommentForm
+              startLine={commentForm.startLine}
+              endLine={commentForm.endLine}
+              onSubmit={onSubmitComment}
+              onCancel={onCancelComment}
+            />
+          )}
         </div>
-      )}
-    </>
+      </td>
+    </tr>
   );
 }
 
@@ -415,48 +448,56 @@ function SplitDiffView({
             const leftType = row.left?.type ?? "context";
             const rightType = row.right?.type ?? "context";
 
+            // Determine the line number to match for inline comments
+            const matchLine = rightLine ?? leftLine;
+            const matchSide = rightLine ? "right" : "left";
+            const showForm = commentForm && commentForm.endLine === matchLine && commentForm.side === matchSide;
+            const lineComments = comments.filter(
+              (c) => c.endLine === matchLine && c.side === matchSide
+            );
+
             return (
-              <tr key={idx}>
-                <td
-                  data-line={leftLine ?? ""}
-                  data-side="left"
-                  className={`w-[1%] min-w-10 text-right px-2 py-0 select-none cursor-pointer ${gutterClass(leftType)}`}
-                  onClick={(e) => {
-                    if (leftLine) onGutterClick(leftLine, "left", e.shiftKey);
-                  }}
-                >
-                  {leftLine ?? ""}
-                </td>
-                <td className={`px-2 py-0 w-[49%] whitespace-pre-wrap break-all ${lineClass(leftType)}`}>
-                  {row.left?.content ?? ""}
-                </td>
-                <td
-                  data-line={rightLine ?? ""}
-                  data-side="right"
-                  className={`w-[1%] min-w-10 text-right px-2 py-0 select-none cursor-pointer ${gutterClass(rightType)}`}
-                  onClick={(e) => {
-                    if (rightLine) onGutterClick(rightLine, "right", e.shiftKey);
-                  }}
-                >
-                  {rightLine ?? ""}
-                </td>
-                <td className={`px-2 py-0 w-[49%] whitespace-pre-wrap break-all ${lineClass(rightType)}`}>
-                  {row.right?.content ?? ""}
-                </td>
-              </tr>
+              <React.Fragment key={idx}>
+                <tr>
+                  <GutterCell
+                    lineNumber={leftLine}
+                    side="left"
+                    type={leftType}
+                    clickable={!!leftLine}
+                    onClick={(e) => {
+                      if (leftLine) onGutterClick(leftLine, "left", e.shiftKey);
+                    }}
+                  />
+                  <td className={`px-2 py-0 w-[49%] whitespace-pre-wrap break-all ${lineClass(leftType)}`}>
+                    {row.left?.content ?? ""}
+                  </td>
+                  <GutterCell
+                    lineNumber={rightLine}
+                    side="right"
+                    type={rightType}
+                    clickable={!!rightLine}
+                    onClick={(e) => {
+                      if (rightLine) onGutterClick(rightLine, "right", e.shiftKey);
+                    }}
+                  />
+                  <td className={`px-2 py-0 w-[49%] whitespace-pre-wrap break-all ${lineClass(rightType)}`}>
+                    {row.right?.content ?? ""}
+                  </td>
+                </tr>
+                <InlineCommentRow
+                  colSpan={4}
+                  commentForm={showForm ? commentForm : null}
+                  lineComments={lineComments}
+                  onSubmitComment={onSubmitComment}
+                  onCancelComment={onCancelComment}
+                  onUpdateComment={onUpdateComment}
+                  onDeleteComment={onDeleteComment}
+                />
+              </React.Fragment>
             );
           })}
         </tbody>
       </table>
-
-      <CommentsSection
-        commentForm={commentForm}
-        comments={comments}
-        onSubmitComment={onSubmitComment}
-        onCancelComment={onCancelComment}
-        onUpdateComment={onUpdateComment}
-        onDeleteComment={onDeleteComment}
-      />
     </div>
   );
 }
@@ -478,65 +519,56 @@ function UnifiedDiffView({
       <table className="w-full text-xs font-mono border-collapse leading-5">
         <tbody>
           {file.hunks.map((hunk, hunkIdx) => (
-            <HunkRows
-              key={hunkIdx}
-              hunk={hunk}
-              onGutterClick={onGutterClick}
-            />
+            <React.Fragment key={hunkIdx}>
+              <HunkHeaderRow hunk={hunk} colSpan={3} />
+              {hunk.lines.map((line, idx) => {
+                const matchLine = line.newLine ?? line.oldLine;
+                const showForm = commentForm && commentForm.endLine === matchLine && commentForm.side === "right";
+                const lineComments = comments.filter(
+                  (c) => c.endLine === matchLine && c.side === "right"
+                );
+
+                return (
+                  <React.Fragment key={idx}>
+                    <tr>
+                      <GutterCell
+                        lineNumber={line.oldLine}
+                        side="left"
+                        type={line.type}
+                      />
+                      <GutterCell
+                        lineNumber={line.newLine}
+                        side="right"
+                        type={line.type}
+                        clickable
+                        onClick={(e) => {
+                          const ln = line.newLine ?? line.oldLine;
+                          if (ln) onGutterClick(ln, "right", e.shiftKey);
+                        }}
+                      />
+                      <td className={`px-2 py-0 whitespace-pre-wrap break-all ${lineClass(line.type)}`}>
+                        <span className="inline-block w-4 select-none text-[#636c76]">
+                          {line.type === "add" ? "+" : line.type === "remove" ? "-" : " "}
+                        </span>
+                        {line.content}
+                      </td>
+                    </tr>
+                    <InlineCommentRow
+                      colSpan={3}
+                      commentForm={showForm ? commentForm : null}
+                      lineComments={lineComments}
+                      onSubmitComment={onSubmitComment}
+                      onCancelComment={onCancelComment}
+                      onUpdateComment={onUpdateComment}
+                      onDeleteComment={onDeleteComment}
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </React.Fragment>
           ))}
         </tbody>
       </table>
-
-      <CommentsSection
-        commentForm={commentForm}
-        comments={comments}
-        onSubmitComment={onSubmitComment}
-        onCancelComment={onCancelComment}
-        onUpdateComment={onUpdateComment}
-        onDeleteComment={onDeleteComment}
-      />
     </div>
-  );
-}
-
-function HunkRows({
-  hunk,
-  onGutterClick,
-}: {
-  hunk: DiffHunk;
-  onGutterClick: (line: number, side: "left" | "right", shiftKey: boolean) => void;
-}) {
-  return (
-    <>
-      <HunkHeaderRow hunk={hunk} colSpan={3} />
-      {hunk.lines.map((line, idx) => (
-        <tr key={idx}>
-          <td
-            data-line={line.oldLine ?? ""}
-            data-side="left"
-            className={`w-[1%] min-w-10 text-right px-2 py-0 select-none ${gutterClass(line.type)}`}
-          >
-            {line.oldLine ?? ""}
-          </td>
-          <td
-            data-line={line.newLine ?? ""}
-            data-side="right"
-            className={`w-[1%] min-w-10 text-right px-2 py-0 select-none cursor-pointer ${gutterClass(line.type)}`}
-            onClick={(e) => {
-              const ln = line.newLine ?? line.oldLine;
-              if (ln) onGutterClick(ln, "right", e.shiftKey);
-            }}
-          >
-            {line.newLine ?? ""}
-          </td>
-          <td className={`px-2 py-0 whitespace-pre-wrap break-all ${lineClass(line.type)}`}>
-            <span className="inline-block w-4 select-none text-[#636c76]">
-              {line.type === "add" ? "+" : line.type === "remove" ? "-" : " "}
-            </span>
-            {line.content}
-          </td>
-        </tr>
-      ))}
-    </>
   );
 }

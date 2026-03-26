@@ -21,19 +21,19 @@ export function DiffCommentForm({
       : `Lines ${startLine}-${endLine}`;
 
   return (
-    <div className="bg-white border border-blue-200 rounded-md p-3 my-1">
-      <div className="text-xs text-gray-500 mb-2">{rangeLabel}</div>
+    <div className="bg-white border border-[#d0d7de] rounded-md p-3 my-1">
+      <div className="text-xs text-[#636c76] mb-2">{rangeLabel}</div>
       <textarea
         placeholder="Add a comment..."
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        className="w-full border border-gray-300 rounded-md p-2 text-sm resize-y min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full border border-[#d0d7de] rounded-md p-2 text-sm resize-y min-h-[60px] focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-transparent"
         autoFocus
       />
       <div className="flex gap-2 mt-2 justify-end">
         <button
           onClick={onCancel}
-          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+          className="px-3 py-1 text-sm border border-[#d0d7de] rounded-md text-[#24292f] bg-[#f6f8fa] hover:bg-[#eaeef2] cursor-pointer"
         >
           Cancel
         </button>
@@ -42,7 +42,7 @@ export function DiffCommentForm({
             if (body.trim()) onSubmit(body.trim());
           }}
           disabled={!body.trim()}
-          className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1 text-sm bg-[#2da44e] text-white rounded-md hover:bg-[#2c974b] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Submit
         </button>
@@ -63,17 +63,17 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
 
   if (editing) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 my-1">
+      <div className="bg-white border border-[#d0d7de] rounded-md p-3 my-1">
         <textarea
           value={editBody}
           onChange={(e) => setEditBody(e.target.value)}
-          className="w-full border border-gray-300 rounded-md p-2 text-sm resize-y min-h-[60px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-[#d0d7de] rounded-md p-2 text-sm resize-y min-h-[60px] focus:outline-none focus:ring-2 focus:ring-[#0969da]"
           role="textbox"
         />
         <div className="flex gap-2 mt-2 justify-end">
           <button
             onClick={() => setEditing(false)}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+            className="px-3 py-1 text-sm border border-[#d0d7de] rounded-md text-[#24292f] bg-[#f6f8fa] hover:bg-[#eaeef2] cursor-pointer"
           >
             Cancel
           </button>
@@ -84,7 +84,7 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
                 setEditing(false);
               }
             }}
-            className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="px-3 py-1 text-sm bg-[#2da44e] text-white rounded-md hover:bg-[#2c974b] cursor-pointer"
           >
             Save
           </button>
@@ -94,7 +94,7 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-md p-3 my-1">
+    <div className="bg-white border border-[#d0d7de] rounded-md p-3 my-1">
       <div className="text-sm whitespace-pre-wrap">{body}</div>
       <div className="flex gap-2 mt-2 justify-end">
         <button
@@ -102,13 +102,13 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
             setEditBody(body);
             setEditing(true);
           }}
-          className="px-2 py-0.5 text-xs text-gray-500 hover:text-blue-600"
+          className="px-3 py-1 text-xs border border-[#d0d7de] rounded-md text-[#24292f] bg-[#f6f8fa] hover:bg-[#eaeef2] cursor-pointer"
         >
           Edit
         </button>
         <button
           onClick={onDelete}
-          className="px-2 py-0.5 text-xs text-gray-500 hover:text-red-600"
+          className="px-3 py-1 text-xs border border-[#cf222e] rounded-md text-[#cf222e] bg-white hover:bg-[#ffebe9] cursor-pointer"
         >
           Delete
         </button>
