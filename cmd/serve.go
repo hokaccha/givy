@@ -19,7 +19,7 @@ var (
 var FrontendFS fs.FS
 
 func init() {
-	serveCmd.Flags().IntVar(&servePort, "port", 6271, "port to listen on")
+	serveCmd.Flags().IntVar(&servePort, "port", envPort(), "port to listen on (env: GIVY_PORT)")
 	serveCmd.Flags().BoolVar(&serveDev, "dev", false, "enable dev mode (proxy frontend to Vite)")
 	rootCmd.AddCommand(serveCmd)
 }

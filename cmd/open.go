@@ -17,8 +17,8 @@ var (
 )
 
 func init() {
-	openCmd.Flags().IntVar(&openPort, "port", 6271, "server port")
-	openCmd.Flags().StringVar(&openRootDir, "root", "", "root directory (same as serve argument)")
+	openCmd.Flags().IntVar(&openPort, "port", envPort(), "server port (env: GIVY_PORT)")
+	openCmd.Flags().StringVar(&openRootDir, "root", envRootDir(), "root directory (env: GIVY_ROOT_DIR)")
 	rootCmd.AddCommand(openCmd)
 }
 

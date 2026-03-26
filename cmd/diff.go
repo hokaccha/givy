@@ -15,8 +15,8 @@ var (
 )
 
 func init() {
-	diffCmd.Flags().IntVar(&diffPort, "port", 6271, "server port")
-	diffCmd.Flags().StringVar(&diffRootDir, "root", "", "root directory (same as serve argument)")
+	diffCmd.Flags().IntVar(&diffPort, "port", envPort(), "server port (env: GIVY_PORT)")
+	diffCmd.Flags().StringVar(&diffRootDir, "root", envRootDir(), "root directory (env: GIVY_ROOT_DIR)")
 	rootCmd.AddCommand(diffCmd)
 }
 
