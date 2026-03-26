@@ -38,7 +38,7 @@ export function ReviewLauncher({ owner, repo }: ReviewLauncherProps) {
     navigate(`/${owner}/${repo}/compare/${base}...${head}`);
   }
 
-  if (loading || branches.length < 2) return null;
+  if (loading) return null;
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
