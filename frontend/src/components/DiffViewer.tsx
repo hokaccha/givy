@@ -31,7 +31,15 @@ export function DiffViewer({
   onDeleteComment,
   onCopyAllPrompts,
 }: DiffViewerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("unified");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem("givy:viewMode");
+    return saved === "split" || saved === "unified" ? saved : "unified";
+  });
+
+  const changeViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem("givy:viewMode", mode);
+  };
   const [filterText, setFilterText] = useState("");
 
   const filteredFiles = filterText
@@ -58,13 +66,13 @@ export function DiffViewer({
             <CopyPromptButton label="Copy All Prompt" onClick={onCopyAllPrompts} />
             <div className="inline-flex rounded-md border border-[#d0d7de] overflow-hidden">
               <button
-                onClick={() => setViewMode("split")}
+                onClick={() => changeViewMode("split")}
                 className={`px-3 py-1 text-xs font-medium ${viewMode === "split" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
               >
                 Split
               </button>
               <button
-                onClick={() => setViewMode("unified")}
+                onClick={() => changeViewMode("unified")}
                 className={`px-3 py-1 text-xs font-medium border-l border-[#d0d7de] ${viewMode === "unified" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
               >
                 Unified
