@@ -15,7 +15,7 @@ export function CommitListView() {
   const base = dotIndex >= 0 ? spec.slice(0, dotIndex) : spec;
   const head = dotIndex >= 0 ? spec.slice(dotIndex + 3) : "";
 
-  useTitle(`${base}...${head}`);
+  useTitle(`${base}...${head} · ${owner}/${repo}`);
 
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);

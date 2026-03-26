@@ -13,7 +13,7 @@ export function TreeView() {
   const repo = params.repo!;
   const path = params["*"] || "";
 
-  useTitle(path ? path : `${owner}/${repo}`);
+  useTitle(path ? `${path} · ${owner}/${repo}` : `${owner}/${repo}`);
 
   const [entries, setEntries] = useState<TreeEntry[]>([]);
   const [loading, setLoading] = useState(true);

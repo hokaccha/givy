@@ -20,7 +20,7 @@ export function CompareView() {
   const base = dotIndex >= 0 ? spec.slice(0, dotIndex) : spec;
   const head = dotIndex >= 0 ? spec.slice(dotIndex + 3) : "";
 
-  useTitle(`${base}...${head}`);
+  useTitle(`${base}...${head} · ${owner}/${repo}`);
 
   const [diffFiles, setDiffFiles] = useState<DiffFile[]>([]);
   const [, setFileStats] = useState<DiffStat[]>([]);

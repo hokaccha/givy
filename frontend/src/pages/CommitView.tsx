@@ -14,7 +14,7 @@ export function CommitView() {
   const repo = params.repo!;
   const commitId = params.commitId!;
 
-  useTitle(commitId.slice(0, 7));
+  useTitle(`${commitId.slice(0, 7)} · ${owner}/${repo}`);
 
   const [diffFiles, setDiffFiles] = useState<DiffFile[]>([]);
   const [commit, setCommit] = useState<CommitInfo | null>(null);

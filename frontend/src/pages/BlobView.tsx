@@ -27,7 +27,7 @@ export function BlobView() {
   const path = params["*"] || "";
   const fileName = path.split("/").pop() || "";
 
-  useTitle(path || fileName);
+  useTitle(`${path || fileName} · ${owner}/${repo}`);
 
   const [blob, setBlob] = useState<BlobResponse | null>(null);
   const [loading, setLoading] = useState(true);
