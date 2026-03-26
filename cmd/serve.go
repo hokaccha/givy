@@ -35,7 +35,9 @@ var serveCmd = &cobra.Command{
 			return fmt.Errorf("resolving root directory: %w", err)
 		}
 		addr := fmt.Sprintf(":%d", servePort)
-		log.Printf("Starting givy server on http://localhost:%d (root: %s)", servePort, rootDir)
+		if serveDev {
+			log.Printf("Starting givy server on http://localhost:%d (root: %s)", servePort, rootDir)
+		}
 
 		var frontendFS fs.FS
 		if !serveDev {

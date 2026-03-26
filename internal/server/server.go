@@ -16,7 +16,9 @@ import (
 // frontendFS should be the embedded frontend/dist filesystem. Pass nil to skip static serving.
 func Start(rootDir, addr string, devMode bool, frontendFS fs.FS) error {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	if devMode {
+		r.Use(middleware.Logger)
+	}
 	r.Use(middleware.Recoverer)
 
 	// Register API routes
@@ -27,7 +29,9 @@ func Start(rootDir, addr string, devMode bool, frontendFS fs.FS) error {
 		serveFrontend(r, frontendFS)
 	}
 
-	log.Printf("Listening on %s", addr)
+	if devMode {
+		log.Printf("Listening on %s", addr)
+	}
 	return http.ListenAndServe(addr, r)
 }
 
