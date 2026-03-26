@@ -21,24 +21,24 @@ test.describe("Diff View", () => {
     await expect(statsArea).toBeVisible();
   });
 
-  test("renders split diff by default", async ({ page }) => {
+  test("renders unified diff by default", async ({ page }) => {
     await page.goto(compareUrl);
 
-    // Should have a split diff layout (left and right columns)
+    // Should have a unified diff layout by default
     await expect(
-      page.locator("[data-testid='diff-split']").first()
+      page.locator("[data-testid='diff-unified']").first()
     ).toBeVisible();
   });
 
-  test("can toggle to unified diff", async ({ page }) => {
+  test("can toggle to split diff", async ({ page }) => {
     await page.goto(compareUrl);
 
-    // Click unified view toggle
-    await page.getByRole("button", { name: /unified/i }).click();
+    // Click split view toggle
+    await page.getByRole("button", { name: /split/i }).click();
 
-    // Should show unified diff layout
+    // Should show split diff layout
     await expect(
-      page.locator("[data-testid='diff-unified']").first()
+      page.locator("[data-testid='diff-split']").first()
     ).toBeVisible();
   });
 

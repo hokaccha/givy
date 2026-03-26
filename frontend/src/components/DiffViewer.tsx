@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { DiffFile, DiffLine } from "../lib/diff-parser";
+import type { DiffFile, DiffLine, DiffHunk } from "../lib/diff-parser";
 import type { Comment } from "../lib/comments";
 import { DiffCommentForm, CommentDisplay } from "./DiffComment";
 import { CopyPromptButton } from "./CopyPromptButton";
@@ -12,8 +12,15 @@ interface DiffViewerProps {
   onAddComment: (input: Omit<Comment, "id" | "createdAt" | "updatedAt">) => void;
   onUpdateComment: (id: string, body: string) => void;
   onDeleteComment: (id: string) => void;
-  onCopyPrompt: (filePath: string) => void;
   onCopyAllPrompts: () => void;
+}
+
+function fileAdditions(file: DiffFile): number {
+  return file.hunks.reduce((sum, h) => sum + h.lines.filter((l) => l.type === "add").length, 0);
+}
+
+function fileDeletions(file: DiffFile): number {
+  return file.hunks.reduce((sum, h) => sum + h.lines.filter((l) => l.type === "remove").length, 0);
 }
 
 export function DiffViewer({
@@ -22,70 +29,104 @@ export function DiffViewer({
   onAddComment,
   onUpdateComment,
   onDeleteComment,
-  onCopyPrompt,
   onCopyAllPrompts,
 }: DiffViewerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("split");
+  const [viewMode, setViewMode] = useState<ViewMode>("unified");
+  const [filterText, setFilterText] = useState("");
+
+  const filteredFiles = filterText
+    ? files.filter((f) => f.newPath.toLowerCase().includes(filterText.toLowerCase()))
+    : files;
+
+  const totalAdditions = files.reduce((sum, f) => sum + fileAdditions(f), 0);
+  const totalDeletions = files.reduce((sum, f) => sum + fileDeletions(f), 0);
 
   return (
     <div>
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-4">
-        <div data-testid="diff-stats" className="text-sm text-gray-600">
-          {files.length} file{files.length !== 1 ? "s" : ""} changed
-        </div>
-        <div className="flex items-center gap-2">
-          <CopyPromptButton label="Copy All Prompt" onClick={onCopyAllPrompts} />
-          <div className="inline-flex rounded-md border border-gray-300 overflow-hidden">
-            <button
-              onClick={() => setViewMode("split")}
-              className={`px-3 py-1.5 text-sm ${viewMode === "split" ? "bg-blue-50 text-blue-700 font-medium" : "bg-white text-gray-600 hover:bg-gray-50"}`}
-            >
-              Split
-            </button>
-            <button
-              onClick={() => setViewMode("unified")}
-              className={`px-3 py-1.5 text-sm border-l border-gray-300 ${viewMode === "unified" ? "bg-blue-50 text-blue-700 font-medium" : "bg-white text-gray-600 hover:bg-gray-50"}`}
-            >
-              Unified
-            </button>
+      <div className="flex items-center justify-between mb-3">
+          <div data-testid="diff-stats" className="text-sm text-[#1f2328]">
+            Showing{" "}
+            <strong>{files.length}</strong>{" "}
+            changed file{files.length !== 1 ? "s" : ""}{" "}
+            with{" "}
+            <span className="text-[#1a7f37] font-semibold">{totalAdditions} additions</span>
+            {" "}and{" "}
+            <span className="text-[#cf222e] font-semibold">{totalDeletions} deletions</span>.
+          </div>
+          <div className="flex items-center gap-2">
+            <CopyPromptButton label="Copy All Prompt" onClick={onCopyAllPrompts} />
+            <div className="inline-flex rounded-md border border-[#d0d7de] overflow-hidden">
+              <button
+                onClick={() => setViewMode("split")}
+                className={`px-3 py-1 text-xs font-medium ${viewMode === "split" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
+              >
+                Split
+              </button>
+              <button
+                onClick={() => setViewMode("unified")}
+                className={`px-3 py-1 text-xs font-medium border-l border-[#d0d7de] ${viewMode === "unified" ? "bg-[#ddf4ff] text-[#0969da] border-[#0969da]" : "bg-[#f6f8fa] text-[#57606a] hover:bg-[#eaeef2]"}`}
+              >
+                Unified
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* File list */}
-      <div data-testid="file-list" className="border border-gray-200 rounded-md mb-4 p-3">
-        <ul className="space-y-1">
+      <div className="flex gap-4">
+        {/* Left sidebar - File tree */}
+        <div className="w-64 shrink-0">
+          <div className="sticky top-4">
+            <div className="relative mb-3">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z" />
+              </svg>
+              <input
+                type="search"
+                placeholder="Filter files..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                className="w-full text-sm pl-8 pr-3 py-1.5 border border-[#d0d7de] rounded-md focus:outline-none focus:border-[#0969da] focus:ring-1 focus:ring-[#0969da]"
+              />
+            </div>
+            <div data-testid="file-list" className="max-h-[calc(100vh-12rem)] overflow-y-auto">
+              {filteredFiles.map((file) => {
+                return (
+                  <a
+                    key={file.newPath}
+                    href={`#diff-${file.newPath}`}
+                    className="flex items-center gap-2 px-1 py-1.5 text-sm text-[#1f2328] hover:bg-[#f6f8fa] rounded"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById(`diff-${file.newPath}`)?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    <svg className="w-4 h-4 shrink-0 text-[#57606a]" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z" />
+                    </svg>
+                    <span className="truncate">{file.newPath}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right side - Diff content */}
+        <div className="flex-1 min-w-0">
           {files.map((file) => (
-            <li key={file.newPath}>
-              <a
-                href={`#diff-${file.newPath}`}
-                className="text-sm text-blue-600 hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById(`diff-${file.newPath}`)?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                {file.newPath}
-              </a>
-            </li>
+            <FileDiff
+              key={file.newPath}
+              file={file}
+              viewMode={viewMode}
+              comments={comments.filter((c) => c.filePath === file.newPath)}
+              onAddComment={onAddComment}
+              onUpdateComment={onUpdateComment}
+              onDeleteComment={onDeleteComment}
+            />
           ))}
-        </ul>
+        </div>
       </div>
-
-      {/* Diffs */}
-      {files.map((file) => (
-        <FileDiff
-          key={file.newPath}
-          file={file}
-          viewMode={viewMode}
-          comments={comments.filter((c) => c.filePath === file.newPath)}
-          onAddComment={onAddComment}
-          onUpdateComment={onUpdateComment}
-          onDeleteComment={onDeleteComment}
-          onCopyPrompt={() => onCopyPrompt(file.newPath)}
-        />
-      ))}
     </div>
   );
 }
@@ -97,8 +138,8 @@ interface FileDiffProps {
   onAddComment: (input: Omit<Comment, "id" | "createdAt" | "updatedAt">) => void;
   onUpdateComment: (id: string, body: string) => void;
   onDeleteComment: (id: string) => void;
-  onCopyPrompt: () => void;
 }
+
 
 function FileDiff({
   file,
@@ -107,8 +148,8 @@ function FileDiff({
   onAddComment,
   onUpdateComment,
   onDeleteComment,
-  onCopyPrompt,
 }: FileDiffProps) {
+  const [collapsed, setCollapsed] = useState(false);
   const [commentForm, setCommentForm] = useState<{
     startLine: number;
     endLine: number;
@@ -119,6 +160,13 @@ function FileDiff({
     line: number;
     side: "left" | "right";
   } | null>(null);
+
+  const adds = fileAdditions(file);
+  const dels = fileDeletions(file);
+  const total = adds + dels;
+  const maxBlocks = 5;
+  const addBlocks = total > 0 ? Math.round((adds / total) * maxBlocks) : 0;
+  const delBlocks = total > 0 ? maxBlocks - addBlocks : 0;
 
   const handleGutterClick = useCallback(
     (line: number, side: "left" | "right", shiftKey: boolean) => {
@@ -154,43 +202,68 @@ function FileDiff({
     <div
       id={`diff-${file.newPath}`}
       data-testid={`diff-file-${file.newPath}`}
-      className="border border-gray-200 rounded-md mb-4 overflow-hidden"
+      className="border border-[#d0d7de] rounded-md mb-4 overflow-hidden"
     >
       {/* File header */}
-      <div className="flex items-center justify-between bg-gray-50 border-b border-gray-200 px-3 py-2">
-        <span className="text-sm font-mono">{file.newPath}</span>
-        <CopyPromptButton label="Copy Prompt" onClick={onCopyPrompt} />
+      <div className="flex items-center gap-2 bg-[#f6f8fa] border-b border-[#d0d7de] px-3 py-2 sticky top-0 z-10">
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="text-[#57606a] hover:text-[#1f2328]"
+          aria-label={collapsed ? "Expand" : "Collapse"}
+        >
+          <svg className={`w-4 h-4 transition-transform ${collapsed ? "-rotate-90" : ""}`} viewBox="0 0 16 16" fill="currentColor">
+            <path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z" />
+          </svg>
+        </button>
+        <span className="text-xs font-mono text-[#1f2328] font-semibold">{file.newPath}</span>
+        <div className="ml-auto flex items-center gap-1.5 text-xs">
+          <span className="text-[#1a7f37]">+{adds}</span>
+          <span className="text-[#cf222e]">-{dels}</span>
+          <span className="flex gap-px ml-1">
+            {Array.from({ length: addBlocks }).map((_, i) => (
+              <span key={`a${i}`} className="inline-block w-2 h-2 rounded-sm bg-[#2da44e]" />
+            ))}
+            {Array.from({ length: delBlocks }).map((_, i) => (
+              <span key={`d${i}`} className="inline-block w-2 h-2 rounded-sm bg-[#cf222e]" />
+            ))}
+            {total === 0 && (
+              <span className="inline-block w-2 h-2 rounded-sm bg-[#d0d7de]" />
+            )}
+          </span>
+        </div>
       </div>
 
       {/* Diff content */}
-      {viewMode === "split" ? (
-        <SplitDiffView
-          file={file}
-          comments={comments}
-          commentForm={commentForm}
-          onGutterClick={handleGutterClick}
-          onSubmitComment={handleSubmitComment}
-          onCancelComment={() => setCommentForm(null)}
-          onUpdateComment={onUpdateComment}
-          onDeleteComment={onDeleteComment}
-        />
-      ) : (
-        <UnifiedDiffView
-          file={file}
-          comments={comments}
-          commentForm={commentForm}
-          onGutterClick={handleGutterClick}
-          onSubmitComment={handleSubmitComment}
-          onCancelComment={() => setCommentForm(null)}
-          onUpdateComment={onUpdateComment}
-          onDeleteComment={onDeleteComment}
-        />
+      {!collapsed && (
+        viewMode === "split" ? (
+          <SplitDiffView
+            file={file}
+            comments={comments}
+            commentForm={commentForm}
+            onGutterClick={handleGutterClick}
+            onSubmitComment={handleSubmitComment}
+            onCancelComment={() => setCommentForm(null)}
+            onUpdateComment={onUpdateComment}
+            onDeleteComment={onDeleteComment}
+          />
+        ) : (
+          <UnifiedDiffView
+            file={file}
+            comments={comments}
+            commentForm={commentForm}
+            onGutterClick={handleGutterClick}
+            onSubmitComment={handleSubmitComment}
+            onCancelComment={() => setCommentForm(null)}
+            onUpdateComment={onUpdateComment}
+            onDeleteComment={onDeleteComment}
+          />
+        )
       )}
     </div>
   );
 }
 
-// --- Split View ---
+// --- Shared helpers ---
 
 interface DiffViewProps {
   file: DiffFile;
@@ -206,9 +279,9 @@ interface DiffViewProps {
 function lineClass(type: DiffLine["type"]): string {
   switch (type) {
     case "add":
-      return "diff-line-add bg-green-50";
+      return "diff-line-add bg-[#e6ffec]";
     case "remove":
-      return "diff-line-remove bg-red-50";
+      return "diff-line-remove bg-[#ffebe9]";
     default:
       return "";
   }
@@ -217,13 +290,72 @@ function lineClass(type: DiffLine["type"]): string {
 function gutterClass(type: DiffLine["type"]): string {
   switch (type) {
     case "add":
-      return "bg-green-100 text-green-700";
+      return "bg-[#aceebb] text-[#24292f]";
     case "remove":
-      return "bg-red-100 text-red-700";
+      return "bg-[#ffd7d5] text-[#24292f]";
     default:
-      return "bg-gray-50 text-gray-400";
+      return "text-[#6e7781]";
   }
 }
+
+function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
+  const text = `@@ -${hunk.header.oldStart},${hunk.header.oldCount} +${hunk.header.newStart},${hunk.header.newCount} @@ ${hunk.header.section}`;
+  return (
+    <tr>
+      <td
+        colSpan={colSpan}
+        className="bg-[#ddf4ff] text-[#0550ae] text-xs font-mono px-3 py-1 select-none"
+      >
+        {text}
+      </td>
+    </tr>
+  );
+}
+
+function CommentsSection({
+  commentForm,
+  comments,
+  onSubmitComment,
+  onCancelComment,
+  onUpdateComment,
+  onDeleteComment,
+}: {
+  commentForm: DiffViewProps["commentForm"];
+  comments: Comment[];
+  onSubmitComment: (body: string) => void;
+  onCancelComment: () => void;
+  onUpdateComment: (id: string, body: string) => void;
+  onDeleteComment: (id: string) => void;
+}) {
+  return (
+    <>
+      {commentForm && (
+        <div className="px-4 border-t border-[#d0d7de]">
+          <DiffCommentForm
+            startLine={commentForm.startLine}
+            endLine={commentForm.endLine}
+            onSubmit={onSubmitComment}
+            onCancel={onCancelComment}
+          />
+        </div>
+      )}
+      {comments.length > 0 && (
+        <div className="px-4 pb-2 border-t border-[#d0d7de]">
+          {comments.map((c) => (
+            <CommentDisplay
+              key={c.id}
+              body={c.body}
+              onEdit={(body) => onUpdateComment(c.id, body)}
+              onDelete={() => onDeleteComment(c.id)}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+// --- Split View ---
 
 function SplitDiffView({
   file,
@@ -235,10 +367,10 @@ function SplitDiffView({
   onUpdateComment,
   onDeleteComment,
 }: DiffViewProps) {
-  // Build paired rows for split view
-  const rows: Array<{ left: DiffLine | null; right: DiffLine | null }> = [];
+  const rows: Array<{ left: DiffLine | null; right: DiffLine | null; hunk?: DiffHunk }> = [];
 
   for (const hunk of file.hunks) {
+    rows.push({ left: null, right: null, hunk });
     let i = 0;
     while (i < hunk.lines.length) {
       const line = hunk.lines[i];
@@ -246,7 +378,6 @@ function SplitDiffView({
         rows.push({ left: line, right: line });
         i++;
       } else if (line.type === "remove") {
-        // Pair removes with subsequent adds
         const removes: DiffLine[] = [];
         while (i < hunk.lines.length && hunk.lines[i].type === "remove") {
           removes.push(hunk.lines[i]);
@@ -273,9 +404,12 @@ function SplitDiffView({
 
   return (
     <div data-testid="diff-split">
-      <table className="w-full text-xs font-mono border-collapse">
+      <table className="w-full text-xs font-mono border-collapse leading-5">
         <tbody>
           {rows.map((row, idx) => {
+            if (row.hunk) {
+              return <HunkHeaderRow key={idx} hunk={row.hunk} colSpan={4} />;
+            }
             const leftLine = row.left?.oldLine;
             const rightLine = row.right?.newLine;
             const leftType = row.left?.type ?? "context";
@@ -283,34 +417,30 @@ function SplitDiffView({
 
             return (
               <tr key={idx}>
-                {/* Left gutter */}
                 <td
                   data-line={leftLine ?? ""}
                   data-side="left"
-                  className={`w-10 text-right px-2 py-0 select-none cursor-pointer border-r border-gray-200 ${gutterClass(leftType)}`}
+                  className={`w-[1%] min-w-10 text-right px-2 py-0 select-none cursor-pointer ${gutterClass(leftType)}`}
                   onClick={(e) => {
                     if (leftLine) onGutterClick(leftLine, "left", e.shiftKey);
                   }}
                 >
                   {leftLine ?? ""}
                 </td>
-                {/* Left content */}
-                <td className={`px-2 py-0 w-1/2 whitespace-pre-wrap break-all ${lineClass(leftType)}`}>
+                <td className={`px-2 py-0 w-[49%] whitespace-pre-wrap break-all ${lineClass(leftType)}`}>
                   {row.left?.content ?? ""}
                 </td>
-                {/* Right gutter */}
                 <td
                   data-line={rightLine ?? ""}
                   data-side="right"
-                  className={`w-10 text-right px-2 py-0 select-none cursor-pointer border-l border-r border-gray-200 ${gutterClass(rightType)}`}
+                  className={`w-[1%] min-w-10 text-right px-2 py-0 select-none cursor-pointer ${gutterClass(rightType)}`}
                   onClick={(e) => {
                     if (rightLine) onGutterClick(rightLine, "right", e.shiftKey);
                   }}
                 >
                   {rightLine ?? ""}
                 </td>
-                {/* Right content */}
-                <td className={`px-2 py-0 w-1/2 whitespace-pre-wrap break-all ${lineClass(rightType)}`}>
+                <td className={`px-2 py-0 w-[49%] whitespace-pre-wrap break-all ${lineClass(rightType)}`}>
                   {row.right?.content ?? ""}
                 </td>
               </tr>
@@ -319,31 +449,14 @@ function SplitDiffView({
         </tbody>
       </table>
 
-      {/* Comment form */}
-      {commentForm && (
-        <div className="px-4">
-          <DiffCommentForm
-            startLine={commentForm.startLine}
-            endLine={commentForm.endLine}
-            onSubmit={onSubmitComment}
-            onCancel={onCancelComment}
-          />
-        </div>
-      )}
-
-      {/* Existing comments */}
-      {comments.length > 0 && (
-        <div className="px-4 pb-2">
-          {comments.map((c) => (
-            <CommentDisplay
-              key={c.id}
-              body={c.body}
-              onEdit={(body) => onUpdateComment(c.id, body)}
-              onDelete={() => onDeleteComment(c.id)}
-            />
-          ))}
-        </div>
-      )}
+      <CommentsSection
+        commentForm={commentForm}
+        comments={comments}
+        onSubmitComment={onSubmitComment}
+        onCancelComment={onCancelComment}
+        onUpdateComment={onUpdateComment}
+        onDeleteComment={onDeleteComment}
+      />
     </div>
   );
 }
@@ -360,66 +473,70 @@ function UnifiedDiffView({
   onUpdateComment,
   onDeleteComment,
 }: DiffViewProps) {
-  const allLines: DiffLine[] = file.hunks.flatMap((h) => h.lines);
-
   return (
     <div data-testid="diff-unified">
-      <table className="w-full text-xs font-mono border-collapse">
+      <table className="w-full text-xs font-mono border-collapse leading-5">
         <tbody>
-          {allLines.map((line, idx) => (
-            <tr key={idx}>
-              <td
-                data-line={line.oldLine ?? ""}
-                data-side="left"
-                className={`w-10 text-right px-2 py-0 select-none border-r border-gray-200 ${gutterClass(line.type)}`}
-              >
-                {line.oldLine ?? ""}
-              </td>
-              <td
-                data-line={line.newLine ?? ""}
-                data-side="right"
-                className={`w-10 text-right px-2 py-0 select-none cursor-pointer border-r border-gray-200 ${gutterClass(line.type)}`}
-                onClick={(e) => {
-                  const ln = line.newLine ?? line.oldLine;
-                  if (ln) onGutterClick(ln, "right", e.shiftKey);
-                }}
-              >
-                {line.newLine ?? ""}
-              </td>
-              <td className={`px-2 py-0 whitespace-pre-wrap break-all ${lineClass(line.type)}`}>
-                <span className="select-none text-gray-400 mr-2">
-                  {line.type === "add" ? "+" : line.type === "remove" ? "-" : " "}
-                </span>
-                {line.content}
-              </td>
-            </tr>
+          {file.hunks.map((hunk, hunkIdx) => (
+            <HunkRows
+              key={hunkIdx}
+              hunk={hunk}
+              onGutterClick={onGutterClick}
+            />
           ))}
         </tbody>
       </table>
 
-      {commentForm && (
-        <div className="px-4">
-          <DiffCommentForm
-            startLine={commentForm.startLine}
-            endLine={commentForm.endLine}
-            onSubmit={onSubmitComment}
-            onCancel={onCancelComment}
-          />
-        </div>
-      )}
-
-      {comments.length > 0 && (
-        <div className="px-4 pb-2">
-          {comments.map((c) => (
-            <CommentDisplay
-              key={c.id}
-              body={c.body}
-              onEdit={(body) => onUpdateComment(c.id, body)}
-              onDelete={() => onDeleteComment(c.id)}
-            />
-          ))}
-        </div>
-      )}
+      <CommentsSection
+        commentForm={commentForm}
+        comments={comments}
+        onSubmitComment={onSubmitComment}
+        onCancelComment={onCancelComment}
+        onUpdateComment={onUpdateComment}
+        onDeleteComment={onDeleteComment}
+      />
     </div>
+  );
+}
+
+function HunkRows({
+  hunk,
+  onGutterClick,
+}: {
+  hunk: DiffHunk;
+  onGutterClick: (line: number, side: "left" | "right", shiftKey: boolean) => void;
+}) {
+  return (
+    <>
+      <HunkHeaderRow hunk={hunk} colSpan={3} />
+      {hunk.lines.map((line, idx) => (
+        <tr key={idx}>
+          <td
+            data-line={line.oldLine ?? ""}
+            data-side="left"
+            className={`w-[1%] min-w-10 text-right px-2 py-0 select-none ${gutterClass(line.type)}`}
+          >
+            {line.oldLine ?? ""}
+          </td>
+          <td
+            data-line={line.newLine ?? ""}
+            data-side="right"
+            className={`w-[1%] min-w-10 text-right px-2 py-0 select-none cursor-pointer ${gutterClass(line.type)}`}
+            onClick={(e) => {
+              const ln = line.newLine ?? line.oldLine;
+              if (ln) onGutterClick(ln, "right", e.shiftKey);
+            }}
+          >
+            {line.newLine ?? ""}
+          </td>
+          <td className={`px-2 py-0 whitespace-pre-wrap break-all ${lineClass(line.type)}`}>
+            <span className="inline-block w-4 select-none text-[#636c76]">
+              {line.type === "add" ? "+" : line.type === "remove" ? "-" : " "}
+            </span>
+            {line.content}
+          </td>
+        </tr>
+      ))}
+    </>
   );
 }

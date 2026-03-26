@@ -29,7 +29,6 @@ export function CompareView() {
     addComment,
     updateComment,
     deleteComment,
-    copyPrompt,
     copyAllPrompts,
   } = useComments(owner, repo, base, head);
 
@@ -53,19 +52,19 @@ export function CompareView() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="mx-auto p-4" style={{ maxWidth: "1600px" }}>
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
-          <h2 className="text-lg font-semibold mt-2">
+          <h2 className="text-sm text-[#636c76] mt-2">
             Comparing{" "}
-            <span className="font-mono text-sm bg-gray-100 px-2 py-0.5 rounded">{base}</span>
+            <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">{base}</span>
             {" "}...{" "}
-            <span className="font-mono text-sm bg-gray-100 px-2 py-0.5 rounded">{head}</span>
+            <span className="font-mono text-xs bg-[#eff1f3] px-1.5 py-0.5 rounded-md text-[#1f2328]">{head}</span>
           </h2>
         </div>
 
-        {loading && <p className="text-gray-500">Loading...</p>}
-        {error && <p className="text-red-600">{error}</p>}
+        {loading && <p className="text-[#636c76]">Loading...</p>}
+        {error && <p className="text-[#cf222e]">{error}</p>}
         {!loading && !error && (
           <DiffViewer
             files={diffFiles}
@@ -73,7 +72,6 @@ export function CompareView() {
             onAddComment={addComment}
             onUpdateComment={updateComment}
             onDeleteComment={deleteComment}
-            onCopyPrompt={(filePath) => copyPrompt(filePath)}
             onCopyAllPrompts={() =>
               copyAllPrompts(diffFiles.map((f) => ({ filePath: f.newPath })))
             }

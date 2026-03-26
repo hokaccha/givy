@@ -98,26 +98,6 @@ test.describe("Review Comments", () => {
     await expect(page.getByText(/lines 5-10/i)).toBeVisible();
   });
 
-  test("Copy Prompt generates correct format", async ({ page }) => {
-    // Add a comment
-    await page.locator("[data-line='5'][data-side='right']").first().click();
-    await page.getByPlaceholder(/add a comment/i).fill("Fix this logic");
-    await page.getByRole("button", { name: /submit/i }).click();
-
-    // Grant clipboard permissions
-    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
-
-    // Click Copy Prompt
-    await page.getByRole("button", { name: /copy prompt/i }).first().click();
-
-    // Check clipboard content
-    const clipboardText = await page.evaluate(() =>
-      navigator.clipboard.readText()
-    );
-    expect(clipboardText).toContain("src/main.go");
-    expect(clipboardText).toContain("Fix this logic");
-  });
-
   test("Copy All Prompt includes all file comments", async ({ page }) => {
     // Add comments on different parts
     await page.locator("[data-line='5'][data-side='right']").first().click();
