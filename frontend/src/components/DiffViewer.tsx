@@ -342,7 +342,7 @@ function GutterCell({
       onClick={onClick}
     >
       {clickable && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 hidden group-hover/gutter:flex items-center justify-center w-5 h-5 bg-[#0969da] text-white rounded-md cursor-pointer z-10">
+        <span className="absolute left-0 top-0 -translate-x-1/2 hidden group-hover/gutter:flex items-center justify-center w-5 h-5 bg-[#0969da] text-white rounded-md cursor-pointer z-10">
           <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
             <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
           </svg>
@@ -566,9 +566,10 @@ function UnifiedDiffView({
               <HunkHeaderRow hunk={hunk} colSpan={3} />
               {hunk.lines.map((line, idx) => {
                 const matchLine = line.newLine ?? line.oldLine;
-                const showForm = commentForm && commentForm.endLine === matchLine && commentForm.side === "right";
+                const matchSide = line.newLine != null ? "right" : "left";
+                const showForm = commentForm && commentForm.endLine === matchLine && commentForm.side === matchSide;
                 const lineComments = comments.filter(
-                  (c) => c.endLine === matchLine && c.side === "right"
+                  (c) => c.endLine === matchLine && c.side === matchSide
                 );
 
                 return (
@@ -586,7 +587,8 @@ function UnifiedDiffView({
                         clickable
                         onClick={(e) => {
                           const ln = line.newLine ?? line.oldLine;
-                          if (ln) onGutterClick(ln, "right", e.shiftKey);
+                          const side = line.newLine != null ? "right" : "left";
+                          if (ln) onGutterClick(ln, side, e.shiftKey);
                         }}
                       />
                       <td className={`px-2 py-0 whitespace-pre-wrap break-all ${lineClass(line.type)}`}>
