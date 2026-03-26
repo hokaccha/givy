@@ -70,7 +70,7 @@ Usage:
 			return err
 		}
 
-		url := fmt.Sprintf("http://localhost:%d/%s/%s/compare/%s...%s", diffPort, owner, repo, base, head)
+		url := fmt.Sprintf("http://localhost:%d/%s/%s/changes/%s...%s", diffPort, owner, repo, base, head)
 		fmt.Println(url)
 		return openBrowser(url)
 	},

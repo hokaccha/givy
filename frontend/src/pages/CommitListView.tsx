@@ -41,7 +41,7 @@ export function CommitListView() {
     { label: repo, href: `/${owner}/${repo}` },
     {
       label: `${base}...${head}`,
-      href: `/${owner}/${repo}/compare/${base}...${head}`,
+      href: `/${owner}/${repo}/changes/${base}...${head}`,
     },
     { label: "Commits" },
   ];

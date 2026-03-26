@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
 import { Layout, Breadcrumb } from "../components/Layout";
 import { FileTree } from "../components/FileTree";
-import { ReviewLauncher } from "../components/ReviewLauncher";
 import { MarkdownViewer } from "../components/MarkdownViewer";
 import { getTree, getBlob } from "../api/client";
 import type { TreeEntry } from "../api/client";
@@ -76,15 +75,12 @@ export function TreeView() {
         <div className="flex items-center justify-between gap-4 mb-4">
           <Breadcrumb items={breadcrumbItems} size="lg" />
           {!path && (
-            <div className="flex items-center gap-2">
-              <Link
-                to={`/${owner}/${repo}/changes`}
-                className="px-3 py-1.5 text-sm font-medium text-[#1f2328] bg-[#f6f8fa] border border-[#d1d9e0] rounded-md hover:bg-[#eaeef2]"
-              >
-                Working Changes
-              </Link>
-              <ReviewLauncher owner={owner} repo={repo} />
-            </div>
+            <Link
+              to={`/${owner}/${repo}/changes`}
+              className="px-4 py-1.5 text-sm font-medium text-white bg-[#0969da] rounded-md hover:bg-[#0860ca]"
+            >
+              View Diff
+            </Link>
           )}
         </div>
 
