@@ -75,9 +75,9 @@ Check the table below to determine which docs to update.
 | API endpoints (handler routes, request/response shape) | `docs/references/api.md` |
 | Frontend routes or URL structure | `docs/references/url-routing.md` |
 | Git commands used in `internal/git/` | `docs/references/git-operations.md` |
-| CLI commands (`cmd/`) | `ARCHITECTURE.md` (Domains table) |
-| Package structure or dependency direction | `ARCHITECTURE.md` |
+| CLI commands (`cmd/`) | `docs/ARCHITECTURE.md` (Domains table) |
+| Package structure or dependency direction | `docs/ARCHITECTURE.md` |
 | New bug fix with non-obvious root cause | `docs/references/known-issues.md` |
-| Tech stack, design decisions, data flow | `docs/design-docs/overview.md`, `ARCHITECTURE.md` |
+| Tech stack, design decisions, data flow | `docs/design-docs/overview.md`, `docs/ARCHITECTURE.md` |
 
 If unsure whether a doc needs updating, read it and check — stale docs are worse than missing docs.
