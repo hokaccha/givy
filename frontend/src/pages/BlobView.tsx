@@ -88,7 +88,9 @@ export function BlobView() {
     }
 
     if (isMarkdown(fileName)) {
-      return <MarkdownViewer content={blob.content} />;
+      const dir = path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "";
+      const rawBase = `/api/repos/${owner}/${repo}/raw${dir ? `/${dir}` : ""}`;
+      return <MarkdownViewer content={blob.content} rawBaseUrl={rawBase} />;
     }
 
     const absPath = rootDir ? `${rootDir}/${owner}/${repo}/${path}` : undefined;
