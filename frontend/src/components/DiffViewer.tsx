@@ -365,9 +365,9 @@ function InlineCommentRow({
 }) {
   if (!commentForm && lineComments.length === 0) return null;
   return (
-    <tr>
+    <tr className="bg-white">
       {Array.from({ length: gutterCols }).map((_, i) => (
-        <td key={i} className="bg-white" />
+        <td key={i} />
       ))}
       <td colSpan={contentCols} className="border-t border-b border-[#d0d7de]">
         <div className="py-2 pr-4 max-w-[700px]">
