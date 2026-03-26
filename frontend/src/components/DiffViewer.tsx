@@ -345,9 +345,8 @@ function HunkHeaderRow({ hunk, colSpan }: { hunk: DiffHunk; colSpan: number }) {
 }
 
 function InlineCommentRow({
-  gutterCols,
+  gutterTypes,
   contentCols,
-  lineType,
   commentForm,
   lineComments,
   onSubmitComment,
@@ -355,9 +354,8 @@ function InlineCommentRow({
   onUpdateComment,
   onDeleteComment,
 }: {
-  gutterCols: number;
+  gutterTypes: DiffLine["type"][];
   contentCols: number;
-  lineType: DiffLine["type"];
   commentForm: DiffViewProps["commentForm"] | null;
   lineComments: Comment[];
   onSubmitComment: (body: string) => void;
@@ -368,8 +366,8 @@ function InlineCommentRow({
   if (!commentForm && lineComments.length === 0) return null;
   return (
     <tr className="bg-white">
-      {Array.from({ length: gutterCols }).map((_, i) => (
-        <td key={i} className={gutterClass(lineType)} />
+      {gutterTypes.map((type, i) => (
+        <td key={i} className={gutterClass(type)} />
       ))}
       <td colSpan={contentCols}>
         <div className="py-2 px-4 max-w-[700px]">
@@ -492,9 +490,8 @@ function SplitDiffView({
                   </td>
                 </tr>
                 <InlineCommentRow
-                  gutterCols={2}
+                  gutterTypes={[leftType, rightType]}
                   contentCols={2}
-                  lineType={rightType}
                   commentForm={showForm ? commentForm : null}
                   lineComments={lineComments}
                   onSubmitComment={onSubmitComment}
@@ -563,9 +560,8 @@ function UnifiedDiffView({
                       </td>
                     </tr>
                     <InlineCommentRow
-                      gutterCols={2}
+                      gutterTypes={[line.type, line.type]}
                       contentCols={1}
-                      lineType={line.type}
                       commentForm={showForm ? commentForm : null}
                       lineComments={lineComments}
                       onSubmitComment={onSubmitComment}
