@@ -41,7 +41,35 @@ func Compare(repoPath, base, head string) (*DiffResult, error) {
 }
 
 // DiffUnstaged generates a diff of unstaged changes (working tree vs index).
+// It temporarily marks untracked files with intent-to-add so they appear in the diff.
 func DiffUnstaged(repoPath string) (*DiffResult, error) {
+	// Find untracked files
+	untracked, err := runGit(repoPath, "ls-files", "--others", "--exclude-standard")
+	if err != nil {
+		return nil, err
+	}
+
+	// Mark untracked files as intent-to-add so git diff includes them
+	var addedFiles []string
+	if untracked != "" {
+		for _, f := range strings.Split(strings.TrimSpace(untracked), "\n") {
+			if f != "" {
+				addedFiles = append(addedFiles, f)
+			}
+		}
+	}
+	if len(addedFiles) > 0 {
+		args := append([]string{"add", "-N", "--"}, addedFiles...)
+		if _, err := runGit(repoPath, args...); err != nil {
+			return nil, err
+		}
+		defer func() {
+			// Remove intent-to-add entries to restore original index state
+			resetArgs := append([]string{"reset", "--"}, addedFiles...)
+			_, _ = runGit(repoPath, resetArgs...)
+		}()
+	}
+
 	return diffWorkingDir(repoPath, "worktree", "index")
 }
 

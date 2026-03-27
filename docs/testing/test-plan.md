@@ -18,7 +18,7 @@ Located alongside source files in `internal/git/` and `internal/handler/`.
 | `repo_test.go` | Repository discovery: finds `owner/repo/.git` dirs, ignores non-repos, search filtering |
 | `tree_test.go` | `ls-tree` output parsing, filesystem-based `ListDir`/`ReadFile` |
 | `branch_test.go` | Branch listing parsing, default branch detection |
-| `diff_test.go` | Unified diff output parsing into structured file/hunk data |
+| `diff_test.go` | Unified diff output parsing, unstaged diff includes untracked files, index state restoration |
 | `git_test.go` | Command execution helper, error wrapping, timeout handling |
 
 Each test uses a real temporary git repository created in test helpers.

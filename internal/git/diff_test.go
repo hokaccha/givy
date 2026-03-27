@@ -1,7 +1,10 @@
 package git_test
 
 import (
+	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/hokaccha/givy/internal/git"
@@ -58,4 +61,79 @@ func TestCompare(t *testing.T) {
 	if result.Patch == "" {
 		t.Error("patch should not be empty")
 	}
+}
+
+func TestDiffUnstaged_IncludesUntrackedFiles(t *testing.T) {
+	root := createTestRepo(t)
+	repoPath := filepath.Join(root, "testowner", "testrepo")
+
+	// Create a new untracked file
+	newFile := filepath.Join(repoPath, "newfile.txt")
+	if err := os.WriteFile(newFile, []byte("new content\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Also modify a tracked file
+	readmePath := filepath.Join(repoPath, "README.md")
+	if err := os.WriteFile(readmePath, []byte("# Updated\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := git.DiffUnstaged(repoPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fileMap := make(map[string]git.DiffStat)
+	for _, f := range result.Files {
+		fileMap[f.Path] = f
+	}
+
+	// Untracked file should appear in diff
+	if _, ok := fileMap["newfile.txt"]; !ok {
+		t.Error("expected untracked file newfile.txt in unstaged diff")
+	}
+
+	// Modified tracked file should also appear
+	if _, ok := fileMap["README.md"]; !ok {
+		t.Error("expected modified file README.md in unstaged diff")
+	}
+
+	// Patch should contain the new file content
+	if !strings.Contains(result.Patch, "new content") {
+		t.Error("patch should contain new file content")
+	}
+}
+
+func TestDiffUnstaged_RestoresIndexState(t *testing.T) {
+	root := createTestRepo(t)
+	repoPath := filepath.Join(root, "testowner", "testrepo")
+
+	// Create an untracked file
+	newFile := filepath.Join(repoPath, "tempfile.txt")
+	if err := os.WriteFile(newFile, []byte("temp\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Call DiffUnstaged
+	if _, err := git.DiffUnstaged(repoPath); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the file is still untracked (not in index)
+	out, err := exec.Command("git", "-C", repoPath, "status", "--porcelain").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	status := string(out)
+
+	for _, line := range strings.Split(strings.TrimSpace(status), "\n") {
+		if strings.HasSuffix(line, "tempfile.txt") {
+			if !strings.HasPrefix(line, "??") {
+				t.Errorf("expected tempfile.txt to be untracked (??), got %q", line)
+			}
+			return
+		}
+	}
+	t.Error("tempfile.txt not found in git status output")
 }
