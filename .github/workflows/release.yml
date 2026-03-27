@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - run: pnpm --dir frontend install --frozen-lockfile
+      - run: pnpm --dir frontend build
+
+      - name: Cross build
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          TARGETS=(
+            "linux/amd64"
+            "linux/arm64"
+            "darwin/amd64"
+            "darwin/arm64"
+          )
+          mkdir -p dist
+          for target in "${TARGETS[@]}"; do
+            GOOS="${target%/*}"
+            GOARCH="${target#*/}"
+            OUTPUT="givy-${VERSION}-${GOOS}-${GOARCH}"
+            echo "Building ${OUTPUT}..."
+            GOOS=$GOOS GOARCH=$GOARCH go build -o "dist/${OUTPUT}/givy" .
+            tar -czf "dist/${OUTPUT}.tar.gz" -C dist "${OUTPUT}"
+          done
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*.tar.gz
