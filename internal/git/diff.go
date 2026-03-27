@@ -104,8 +104,11 @@ func generateNewFilePatch(path string, lines []string) string {
 		count--
 	}
 	b.WriteString(fmt.Sprintf("@@ -0,0 +1,%d @@\n", count))
-	for _, line := range lines {
-		b.WriteString("+" + line + "\n")
+	for i, line := range lines {
+		b.WriteString("+" + line)
+		if i < count-1 {
+			b.WriteString("\n")
+		}
 	}
 	return b.String()
 }
