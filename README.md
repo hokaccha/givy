@@ -186,6 +186,13 @@ givy diff main...feature/new-ui
 | `GIVY_PORT` | `6271` | Server port (also used by `open` and `diff` commands) |
 | `GIVY_ROOT_DIR` | — | Root directory (used by `open` and `diff` commands as default `--root`) |
 
+## Inspiration
+
+This project is inspired by and references the following tools:
+
+- [mo](https://github.com/k1LoW/mo) — A Git-centric and AI-readable and writable code review tool
+- [difit](https://github.com/yoshiko-pg/difit) — Local diff viewer for Git
+
 ## License
 
 MIT
