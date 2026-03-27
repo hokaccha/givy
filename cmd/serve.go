@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io/fs"
-	"log"
 	"path/filepath"
 
 	"github.com/hokaccha/givy/internal/server"
@@ -35,7 +34,13 @@ var serveCmd = &cobra.Command{
 			return fmt.Errorf("resolving root directory: %w", err)
 		}
 		addr := fmt.Sprintf(":%d", servePort)
-		log.Printf("Starting givy server on http://localhost:%d (root: %s)", servePort, rootDir)
+
+		fmt.Println()
+		fmt.Printf("  \033[1;36mgivy\033[0m server started\n")
+		fmt.Println()
+		fmt.Printf("  \033[1mURL:\033[0m   \033[4;34mhttp://localhost:%d\033[0m\n", servePort)
+		fmt.Printf("  \033[1mRoot:\033[0m  %s\n", rootDir)
+		fmt.Println()
 
 		var frontendFS fs.FS
 		if !serveDev {
