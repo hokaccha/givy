@@ -59,18 +59,14 @@ git -C <repo> diff <base>...<head>
 ## Unstaged Diff (Working Tree vs Index)
 
 ```bash
-# List untracked files (to include new files in diff)
-git -C <repo> ls-files --others --exclude-standard
-
-# Mark untracked files as intent-to-add
-git -C <repo> add -N -- <files...>
-
-# Generate diff (now includes untracked files)
+# Diff of tracked files
 git -C <repo> diff
+# Output: standard unified diff of unstaged changes
 
-# Restore index state (remove intent-to-add entries)
-git -C <repo> reset -- <files...>
-# Output: standard unified diff of unstaged changes including new files
+# List untracked files (new files not yet staged)
+git -C <repo> ls-files --others --exclude-standard
+# Output: one file path per line
+# These files are read directly and a unified diff patch is generated in code.
 ```
 
 ## Staged Diff (Index vs HEAD)

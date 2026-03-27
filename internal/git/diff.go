@@ -1,6 +1,9 @@
 package git
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -41,36 +44,70 @@ func Compare(repoPath, base, head string) (*DiffResult, error) {
 }
 
 // DiffUnstaged generates a diff of unstaged changes (working tree vs index).
-// It temporarily marks untracked files with intent-to-add so they appear in the diff.
+// Untracked files are included by reading their content directly.
 func DiffUnstaged(repoPath string) (*DiffResult, error) {
-	// Find untracked files
-	untracked, err := runGit(repoPath, "ls-files", "--others", "--exclude-standard")
+	result, err := diffWorkingDir(repoPath, "worktree", "index")
 	if err != nil {
 		return nil, err
 	}
 
-	// Mark untracked files as intent-to-add so git diff includes them
-	var addedFiles []string
-	if untracked != "" {
-		for _, f := range strings.Split(strings.TrimSpace(untracked), "\n") {
-			if f != "" {
-				addedFiles = append(addedFiles, f)
-			}
-		}
+	// Find untracked files and append them
+	untracked, err := runGit(repoPath, "ls-files", "--others", "--exclude-standard")
+	if err != nil {
+		return nil, err
 	}
-	if len(addedFiles) > 0 {
-		args := append([]string{"add", "-N", "--"}, addedFiles...)
-		if _, err := runGit(repoPath, args...); err != nil {
-			return nil, err
-		}
-		defer func() {
-			// Remove intent-to-add entries to restore original index state
-			resetArgs := append([]string{"reset", "--"}, addedFiles...)
-			_, _ = runGit(repoPath, resetArgs...)
-		}()
+	if untracked == "" {
+		return result, nil
 	}
 
-	return diffWorkingDir(repoPath, "worktree", "index")
+	for _, f := range strings.Split(untracked, "\n") {
+		if f == "" {
+			continue
+		}
+		content, err := os.ReadFile(filepath.Join(repoPath, f))
+		if err != nil {
+			continue
+		}
+
+		lines := strings.Split(string(content), "\n")
+		additions := len(lines)
+		if len(lines) > 0 && lines[len(lines)-1] == "" {
+			additions--
+		}
+
+		result.Files = append(result.Files, DiffStat{
+			Path:      f,
+			Status:    "added",
+			Additions: additions,
+		})
+		result.Stats.Files++
+		result.Stats.Additions += additions
+
+		// Generate unified diff patch for the new file
+		result.Patch += generateNewFilePatch(f, lines)
+	}
+
+	return result, nil
+}
+
+// generateNewFilePatch creates a unified diff patch for a new file.
+func generateNewFilePatch(path string, lines []string) string {
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("diff --git a/%s b/%s\n", path, path))
+	b.WriteString("new file mode 100644\n")
+	b.WriteString(fmt.Sprintf("--- /dev/null\n"))
+	b.WriteString(fmt.Sprintf("+++ b/%s\n", path))
+
+	count := len(lines)
+	if count > 0 && lines[count-1] == "" {
+		lines = lines[:count-1]
+		count--
+	}
+	b.WriteString(fmt.Sprintf("@@ -0,0 +1,%d @@\n", count))
+	for _, line := range lines {
+		b.WriteString("+" + line + "\n")
+	}
+	return b.String()
 }
 
 // DiffStaged generates a diff of staged changes (index vs HEAD).
