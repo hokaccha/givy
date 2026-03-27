@@ -20,6 +20,13 @@ A local GitHub-like git viewer with a web UI. Browse repositories, view files wi
 go install github.com/hokaccha/givy@latest
 ```
 
+Or install with [mise](https://mise.jdx.dev/):
+
+```bash
+mise use github:hokaccha/givy@latest
+mise install github:hokaccha/givy@latest
+```
+
 Or build from source:
 
 ```bash
