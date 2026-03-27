@@ -29,9 +29,6 @@ func Start(rootDir, addr string, devMode bool, frontendFS fs.FS) error {
 		serveFrontend(r, frontendFS)
 	}
 
-	if devMode {
-		log.Printf("Listening on %s", addr)
-	}
 	return http.ListenAndServe(addr, r)
 }
 
