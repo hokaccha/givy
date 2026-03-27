@@ -60,7 +60,7 @@ func serveFrontend(r chi.Router, frontendFS fs.FS) {
 			// Check if file exists in the embedded FS
 			cleanPath := strings.TrimPrefix(path, "/")
 			if f, err := distFS.Open(cleanPath); err == nil {
-				f.Close()
+				_ = f.Close()
 				fileServer.ServeHTTP(w, r)
 				return
 			}
