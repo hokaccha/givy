@@ -93,17 +93,17 @@ func DiffUnstaged(repoPath string) (*DiffResult, error) {
 // generateNewFilePatch creates a unified diff patch for a new file.
 func generateNewFilePatch(path string, lines []string) string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("diff --git a/%s b/%s\n", path, path))
+	fmt.Fprintf(&b, "diff --git a/%s b/%s\n", path, path)
 	b.WriteString("new file mode 100644\n")
-	b.WriteString(fmt.Sprintf("--- /dev/null\n"))
-	b.WriteString(fmt.Sprintf("+++ b/%s\n", path))
+	b.WriteString("--- /dev/null\n")
+	fmt.Fprintf(&b, "+++ b/%s\n", path)
 
 	count := len(lines)
 	if count > 0 && lines[count-1] == "" {
 		lines = lines[:count-1]
 		count--
 	}
-	b.WriteString(fmt.Sprintf("@@ -0,0 +1,%d @@\n", count))
+	fmt.Fprintf(&b, "@@ -0,0 +1,%d @@\n", count)
 	for i, line := range lines {
 		b.WriteString("+" + line)
 		if i < count-1 {
