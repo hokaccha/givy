@@ -503,7 +503,7 @@ function SplitDiffView({
               <React.Fragment key={idx}>
                 <tr>
                   <GutterCell
-                    lineNumber={leftLine}
+                    lineNumber={leftLine ?? undefined}
                     side="left"
                     type={leftType}
                     clickable={!!leftLine}
@@ -515,7 +515,7 @@ function SplitDiffView({
                     {row.left?.content ?? ""}
                   </td>
                   <GutterCell
-                    lineNumber={rightLine}
+                    lineNumber={rightLine ?? undefined}
                     side="right"
                     type={rightType}
                     clickable={!!rightLine}
@@ -576,12 +576,12 @@ function UnifiedDiffView({
                   <React.Fragment key={idx}>
                     <tr>
                       <GutterCell
-                        lineNumber={line.oldLine}
+                        lineNumber={line.oldLine ?? undefined}
                         side="left"
                         type={line.type}
                       />
                       <GutterCell
-                        lineNumber={line.newLine}
+                        lineNumber={line.newLine ?? undefined}
                         side="right"
                         type={line.type}
                         clickable
