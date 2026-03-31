@@ -13,7 +13,7 @@ export function Layout({ children }: LayoutProps) {
       <header className="border-b border-gray-200 bg-gray-50">
         <div className="px-4 py-3 flex items-center gap-4">
           <Link to="/" className="hover:opacity-80">
-            <img src="/logo.png" alt="givy" className="h-9" />
+            <img src="/logo.svg" alt="givy" className="h-9" />
           </Link>
           {owner && repo && (
             <Link to={`/${owner}/${repo}`} className="text-base font-semibold text-gray-700 hover:text-gray-900">
