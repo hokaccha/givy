@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,14 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	openPort    int
-	openRootDir string
-)
+var openPort int
 
 func init() {
 	openCmd.Flags().IntVar(&openPort, "port", envPort(), "server port (env: GIVY_PORT)")
-	openCmd.Flags().StringVar(&openRootDir, "root", envRootDir(), "root directory (env: GIVY_ROOT_DIR)")
 	rootCmd.AddCommand(openCmd)
 }
 
@@ -62,17 +60,9 @@ func openCommit(commitID string) error {
 		return fmt.Errorf("get cwd: %w", err)
 	}
 
-	rootDir := openRootDir
-	if rootDir == "" {
-		rootDir, err = inferRootDir(cwd)
-		if err != nil {
-			return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
-		}
-	} else {
-		rootDir, err = filepath.Abs(rootDir)
-		if err != nil {
-			return fmt.Errorf("resolve root: %w", err)
-		}
+	rootDir, err := fetchRootDirFromServer(openPort)
+	if err != nil {
+		return err
 	}
 
 	relPath, err := filepath.Rel(rootDir, cwd)
@@ -97,17 +87,9 @@ func openPath(target string) error {
 		return fmt.Errorf("resolve path: %w", err)
 	}
 
-	rootDir := openRootDir
-	if rootDir == "" {
-		rootDir, err = inferRootDir(targetPath)
-		if err != nil {
-			return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
-		}
-	} else {
-		rootDir, err = filepath.Abs(rootDir)
-		if err != nil {
-			return fmt.Errorf("resolve root: %w", err)
-		}
+	rootDir, err := fetchRootDirFromServer(openPort)
+	if err != nil {
+		return err
 	}
 
 	relPath, err := filepath.Rel(rootDir, targetPath)
@@ -146,34 +128,25 @@ func openPath(target string) error {
 	return openBrowser(url)
 }
 
-// inferRootDir walks up the directory tree to find the root repos directory.
-// It looks for the pattern: <root>/<owner>/<repo>/.git
-func inferRootDir(path string) (string, error) {
-	dir := path
-	info, err := os.Stat(path)
+// fetchRootDirFromServer retrieves the root directory from the running givy
+// server's /api/info endpoint.
+func fetchRootDirFromServer(port int) (string, error) {
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/api/info", port))
 	if err != nil {
 		return "", err
 	}
-	if !info.IsDir() {
-		dir = filepath.Dir(path)
-	}
+	defer resp.Body.Close()
 
-	// Walk up looking for .git directory
-	for {
-		gitDir := filepath.Join(dir, ".git")
-		if info, err := os.Stat(gitDir); err == nil && info.IsDir() {
-			// Found .git, the root should be two levels up (owner/repo/.git)
-			repoDir := dir
-			ownerDir := filepath.Dir(repoDir)
-			rootDir := filepath.Dir(ownerDir)
-			return rootDir, nil
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			return "", fmt.Errorf("no .git directory found in ancestors of %s", path)
-		}
-		dir = parent
+	var info struct {
+		RootDir string `json:"rootDir"`
 	}
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return "", fmt.Errorf("decode server info: %w", err)
+	}
+	if info.RootDir == "" {
+		return "", fmt.Errorf("server returned empty rootDir")
+	}
+	return info.RootDir, nil
 }
 
 func detectBranch(repoDir string) string {

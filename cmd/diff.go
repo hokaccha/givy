@@ -9,14 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	diffPort    int
-	diffRootDir string
-)
+var diffPort int
 
 func init() {
 	diffCmd.Flags().IntVar(&diffPort, "port", envPort(), "server port (env: GIVY_PORT)")
-	diffCmd.Flags().StringVar(&diffRootDir, "root", envRootDir(), "root directory (env: GIVY_ROOT_DIR)")
 	rootCmd.AddCommand(diffCmd)
 }
 
@@ -33,25 +29,15 @@ Usage:
   givy diff main...feature/branch    # Compare specific base and head`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
-		rootDir := diffRootDir
-		var err error
-
 		// Get current directory's repo info
 		cwd, err := filepath.Abs(".")
 		if err != nil {
 			return fmt.Errorf("get cwd: %w", err)
 		}
 
-		if rootDir == "" {
-			rootDir, err = inferRootDir(cwd)
-			if err != nil {
-				return fmt.Errorf("cannot infer root directory, use --root flag: %w", err)
-			}
-		} else {
-			rootDir, err = filepath.Abs(rootDir)
-			if err != nil {
-				return fmt.Errorf("resolve root: %w", err)
-			}
+		rootDir, err := fetchRootDirFromServer(diffPort)
+		if err != nil {
+			return err
 		}
 
 		// Determine owner/repo from cwd

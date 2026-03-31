@@ -24,6 +24,11 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+// envRootDir returns the root directory from GIVY_ROOT_DIR env var, or "".
+func envRootDir() string {
+	return os.Getenv("GIVY_ROOT_DIR")
+}
+
 // envPort returns the port from GIVY_PORT env var, or defaultPort.
 func envPort() int {
 	if s := os.Getenv("GIVY_PORT"); s != "" {
@@ -32,9 +37,4 @@ func envPort() int {
 		}
 	}
 	return defaultPort
-}
-
-// envRootDir returns the root directory from GIVY_ROOT_DIR env var, or "".
-func envRootDir() string {
-	return os.Getenv("GIVY_ROOT_DIR")
 }

@@ -163,7 +163,7 @@ givy open ~/src/hokaccha/givy/internal/
 givy open abc1234
 ```
 
-Givy automatically infers the root directory from the file path. Use `--root` to specify it explicitly.
+Requires a running `givy serve` instance. The root directory is fetched from the server automatically.
 
 ### `givy diff [spec]`
 
@@ -191,7 +191,7 @@ givy diff main...feature/new-ui
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
 | `GIVY_PORT` | `6271` | Server port (also used by `open` and `diff` commands) |
-| `GIVY_ROOT_DIR` | — | Root directory (used by `open` and `diff` commands as default `--root`) |
+| `GIVY_ROOT_DIR` | — | Default root directory for `givy serve` |
 
 ## Inspiration
 

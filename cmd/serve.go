@@ -24,12 +24,21 @@ func init() {
 }
 
 var serveCmd = &cobra.Command{
-	Use:   "serve <directory>",
+	Use:   "serve [directory]",
 	Short: "Start the web server",
-	Long:  "Start the givy web server, serving repositories from the specified directory.",
-	Args:  cobra.ExactArgs(1),
+	Long:  "Start the givy web server, serving repositories from the specified directory.\nDefaults to GIVY_ROOT_DIR if set.",
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
-		rootDir, err := filepath.Abs(args[0])
+		var dir string
+		if len(args) == 1 {
+			dir = args[0]
+		} else {
+			dir = envRootDir()
+			if dir == "" {
+				return fmt.Errorf("no directory specified and GIVY_ROOT_DIR is not set")
+			}
+		}
+		rootDir, err := filepath.Abs(dir)
 		if err != nil {
 			return fmt.Errorf("resolving root directory: %w", err)
 		}
