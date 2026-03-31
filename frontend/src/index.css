@@ -11,3 +11,36 @@
 .markdown-body pre code.hljs {
   padding: 0;
 }
+
+/* Code block copy button */
+.markdown-body .code-block-wrapper {
+  position: relative;
+}
+
+.markdown-body .code-block-wrapper > pre {
+  margin: 0;
+}
+
+.markdown-body .code-copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+
+.markdown-body .code-block-wrapper:hover .code-copy-button {
+  opacity: 1;
+}
+
+.markdown-body .code-copy-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}

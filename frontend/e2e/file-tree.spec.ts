@@ -39,14 +39,16 @@ test.describe("File Tree", () => {
   test("directories are listed before files", async ({ page }) => {
     await page.goto("/testowner/testrepo");
 
-    // Get all links in the file tree table
-    const links = page.locator("table a");
-    const names = await links.allTextContents();
+    // Get all row links in the file tree table
+    const rows = page.locator("table tbody tr");
+    const allText = await rows.allTextContents();
 
     // Find positions of a known directory and file
-    const srcIdx = names.indexOf("src");
-    const readmeIdx = names.indexOf("README.md");
+    const srcIdx = allText.findIndex((t) => t.includes("src"));
+    const readmeIdx = allText.findIndex((t) => t.includes("README.md"));
 
+    expect(srcIdx).toBeGreaterThanOrEqual(0);
+    expect(readmeIdx).toBeGreaterThanOrEqual(0);
     expect(srcIdx).toBeLessThan(readmeIdx);
   });
 });

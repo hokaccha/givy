@@ -37,8 +37,8 @@ test.describe("File Viewer", () => {
   test("displays image inline", async ({ page }) => {
     await page.goto("/testowner/testrepo/blob/assets/logo.png");
 
-    // Should show an image element
-    await expect(page.locator("img")).toBeVisible();
+    // Should show the image (not the logo in header)
+    await expect(page.getByRole("img", { name: "logo.png" })).toBeVisible();
   });
 
   test("shows binary file message", async ({ page }) => {
