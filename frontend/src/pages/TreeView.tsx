@@ -83,7 +83,7 @@ export function TreeView() {
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
         <div className="flex items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Breadcrumb items={breadcrumbItems} size="lg" />
             {path && (
               <>

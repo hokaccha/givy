@@ -99,7 +99,7 @@ export function BlobView() {
   return (
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-3 mb-4">
           <Breadcrumb items={breadcrumbItems} size="lg" />
           <button
             onClick={copyPath}
