@@ -5,6 +5,9 @@
 ```bash
 # Development
 make dev              # Start Go backend + Vite dev server concurrently
+                      # Frontend (Vite): http://localhost:5173
+                      # Backend (Go):    http://localhost:16271
+                      # Access the app via the frontend URL (Vite proxies /api to backend)
 
 # Testing
 make test             # Go tests: go test ./...

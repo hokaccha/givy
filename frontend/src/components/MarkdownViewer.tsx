@@ -6,6 +6,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { useMemo } from "react";
+import { MermaidDiagram } from "./MermaidDiagram";
 import "github-markdown-css/github-markdown-light.css";
 import "highlight.js/styles/github.css";
 import "remark-github-blockquote-alert/alert.css";
@@ -34,11 +35,34 @@ interface MarkdownViewerProps {
 
 export function MarkdownViewer({ content, rawBaseUrl }: MarkdownViewerProps) {
   const components = useMemo<Components>(() => {
-    if (!rawBaseUrl) return {};
     return {
-      img: ({ src, ...props }) => {
-        const resolved = src && isRelativeUrl(src) ? `${rawBaseUrl}/${src}` : src;
-        return <img src={resolved} {...props} />;
+      img: rawBaseUrl
+        ? ({ src, ...props }) => {
+            const resolved =
+              src && isRelativeUrl(src) ? `${rawBaseUrl}/${src}` : src;
+            return <img src={resolved} {...props} />;
+          }
+        : undefined,
+      code: ({ className, children }) => {
+        const match = className?.match(/language-mermaid/);
+        if (match) {
+          const code = String(children).replace(/\n$/, "");
+          return <MermaidDiagram code={code} />;
+        }
+        return <code className={className}>{children}</code>;
+      },
+      pre: ({ children }) => {
+        // If the child is a MermaidDiagram, render without <pre> wrapper
+        const child = Array.isArray(children) ? children[0] : children;
+        if (
+          child &&
+          typeof child === "object" &&
+          "type" in child &&
+          child.type === MermaidDiagram
+        ) {
+          return <>{children}</>;
+        }
+        return <pre>{children}</pre>;
       },
     };
   }, [rawBaseUrl]);
