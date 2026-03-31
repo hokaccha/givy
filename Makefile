@@ -1,4 +1,5 @@
 ROOT_DIR := $(shell cd ../.. && pwd)
+DEV_PORT := 16271
 
 .PHONY: dev dev-backend dev-frontend build test test-frontend test-e2e lint lint-go lint-frontend clean
 
@@ -8,10 +9,10 @@ dev:
 	$(MAKE) -j2 dev-backend dev-frontend
 
 dev-backend:
-	air -- serve --dev $(ROOT_DIR)
+	air -- serve --dev --port $(DEV_PORT) $(ROOT_DIR)
 
 dev-frontend:
-	cd frontend && pnpm dev
+	cd frontend && GIVY_PORT=$(DEV_PORT) pnpm dev
 
 # Build
 build: build-frontend
