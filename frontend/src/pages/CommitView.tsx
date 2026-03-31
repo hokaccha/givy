@@ -42,7 +42,7 @@ export function CommitView() {
   const shortHash = commitId.slice(0, 7);
 
   const breadcrumbItems = [
-    { label: <>{owner} <span className="text-gray-400">/</span> {repo}</>, href: `/${owner}/${repo}` },
+    { label: repo, href: `/${owner}/${repo}` },
     { label: shortHash },
   ];
 

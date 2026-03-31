@@ -86,7 +86,7 @@ export function ChangesView() {
   }, [owner, repo, mode, base, head]);
 
   const breadcrumbItems = [
-    { label: <>{owner} <span className="text-gray-400">/</span> {repo}</>, href: `/${owner}/${repo}` },
+    { label: repo, href: `/${owner}/${repo}` },
     { label: "Diff" },
   ];
 

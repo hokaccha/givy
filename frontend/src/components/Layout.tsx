@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { owner, repo } = useParams();
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-200 bg-gray-50">
@@ -13,6 +15,11 @@ export function Layout({ children }: LayoutProps) {
           <Link to="/" className="hover:opacity-80">
             <img src="/logo.png" alt="givy" className="h-9" />
           </Link>
+          {owner && repo && (
+            <Link to={`/${owner}/${repo}`} className="text-base font-semibold text-gray-700 hover:text-gray-900">
+              {owner} <span className="text-gray-400">/</span> {repo}
+            </Link>
+          )}
         </div>
       </header>
       <main>{children}</main>
