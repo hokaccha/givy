@@ -183,6 +183,56 @@ index abc..def 100644
     expect(parseDiff("")).toEqual([]);
   });
 
+  it("does not produce trailing empty line from patch ending with newline", () => {
+    const diff = `diff --git a/new.txt b/new.txt
+new file mode 100644
+--- /dev/null
++++ b/new.txt
+@@ -0,0 +1,2 @@
++line1
++line2
+`;
+
+    const result = parseDiff(diff);
+    expect(result).toHaveLength(1);
+    const lines = result[0].hunks[0].lines;
+    expect(lines).toHaveLength(2);
+    expect(lines.every((l) => l.type === "add")).toBe(true);
+  });
+
+  it("separates new files that follow a modified file", () => {
+    const diff = `diff --git a/existing.txt b/existing.txt
+index abc..def 100644
+--- a/existing.txt
++++ b/existing.txt
+@@ -1,3 +1,3 @@
+ line1
+-old
++new
+ line3
+diff --git a/new1.txt b/new1.txt
+new file mode 100644
+--- /dev/null
++++ b/new1.txt
+@@ -0,0 +1,1 @@
++hello
+diff --git a/new2.txt b/new2.txt
+new file mode 100644
+--- /dev/null
++++ b/new2.txt
+@@ -0,0 +1,1 @@
++world
+`;
+
+    const result = parseDiff(diff);
+    expect(result).toHaveLength(3);
+    expect(result[0].newPath).toBe("existing.txt");
+    expect(result[1].newPath).toBe("new1.txt");
+    expect(result[2].newPath).toBe("new2.txt");
+    expect(result[1].hunks[0].lines).toHaveLength(1);
+    expect(result[2].hunks[0].lines).toHaveLength(1);
+  });
+
   it("parses diff with multiple hunks in one file", () => {
     const diff = `diff --git a/test.txt b/test.txt
 index abc..def 100644

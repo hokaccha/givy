@@ -84,6 +84,9 @@ func DiffUnstaged(repoPath string) (*DiffResult, error) {
 		result.Stats.Additions += additions
 
 		// Generate unified diff patch for the new file
+		if result.Patch != "" && !strings.HasSuffix(result.Patch, "\n") {
+			result.Patch += "\n"
+		}
 		result.Patch += generateNewFilePatch(f, lines)
 	}
 
@@ -104,11 +107,8 @@ func generateNewFilePatch(path string, lines []string) string {
 		count--
 	}
 	fmt.Fprintf(&b, "@@ -0,0 +1,%d @@\n", count)
-	for i, line := range lines {
-		b.WriteString("+" + line)
-		if i < count-1 {
-			b.WriteString("\n")
-		}
+	for _, line := range lines {
+		b.WriteString("+" + line + "\n")
 	}
 	return b.String()
 }

@@ -33,7 +33,7 @@ export function parseDiff(diffText: string): DiffFile[] {
   if (!diffText.trim()) return [];
 
   const files: DiffFile[] = [];
-  const lines = diffText.split("\n");
+  const lines = diffText.replace(/\n$/, "").split("\n");
   let i = 0;
 
   while (i < lines.length) {

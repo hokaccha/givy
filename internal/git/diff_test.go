@@ -105,6 +105,47 @@ func TestDiffUnstaged_IncludesUntrackedFiles(t *testing.T) {
 	}
 }
 
+func TestDiffUnstaged_PatchSeparatesFiles(t *testing.T) {
+	root := createTestRepo(t)
+	repoPath := filepath.Join(root, "testowner", "testrepo")
+
+	// Modify a tracked file
+	readmePath := filepath.Join(repoPath, "README.md")
+	if err := os.WriteFile(readmePath, []byte("# Updated\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create two untracked files
+	if err := os.WriteFile(filepath.Join(repoPath, "new1.txt"), []byte("hello\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(repoPath, "new2.txt"), []byte("world\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := git.DiffUnstaged(repoPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Each "diff --git" line must start at the beginning of a line
+	for i, line := range strings.Split(result.Patch, "\n") {
+		if strings.Contains(line, "diff --git") && !strings.HasPrefix(line, "diff --git") {
+			t.Errorf("line %d: 'diff --git' not at start of line: %q", i, line)
+		}
+	}
+
+	// Count the number of "diff --git" headers — should be at least 3
+	count := strings.Count(result.Patch, "\ndiff --git ")
+	// The first "diff --git" may be at the very start (no preceding \n)
+	if strings.HasPrefix(result.Patch, "diff --git ") {
+		count++
+	}
+	if count < 3 {
+		t.Errorf("expected at least 3 diff headers (README.md + new1.txt + new2.txt), got %d", count)
+	}
+}
+
 func TestDiffUnstaged_RestoresIndexState(t *testing.T) {
 	root := createTestRepo(t)
 	repoPath := filepath.Join(root, "testowner", "testrepo")
