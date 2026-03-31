@@ -1,0 +1,8 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/givy ."
+  bin = "./tmp/givy"
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "frontend", "node_modules", "assets", "docs"]

@@ -1,3 +1,5 @@
+ROOT_DIR := $(shell cd ../.. && pwd)
+
 .PHONY: dev dev-backend dev-frontend build test test-frontend test-e2e lint lint-go lint-frontend clean
 
 # Development
@@ -6,7 +8,7 @@ dev:
 	$(MAKE) -j2 dev-backend dev-frontend
 
 dev-backend:
-	go run . serve --dev $(ROOT_DIR)
+	air -- serve --dev $(ROOT_DIR)
 
 dev-frontend:
 	cd frontend && pnpm dev
