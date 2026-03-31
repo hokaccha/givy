@@ -16,7 +16,7 @@ dev-frontend:
 
 # Build
 build: build-frontend
-	go build -o givy .
+	go build -ldflags "-X github.com/hokaccha/givy/cmd.Version=$(VERSION)" -o givy .
 
 build-frontend:
 	cd frontend && pnpm build

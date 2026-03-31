@@ -7,12 +7,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Version is set at build time via -ldflags.
+var Version = "dev"
+
 const defaultPort = 6271
 
 var rootCmd = &cobra.Command{
-	Use:   "givy",
-	Short: "A local GitHub-like git viewer",
-	Long:  "Givy is a local git repository viewer with a GitHub-like web interface.",
+	Use:     "givy",
+	Short:   "A local GitHub-like git viewer",
+	Long:    "Givy is a local git repository viewer with a GitHub-like web interface.",
+	Version: Version,
 }
 
 // Execute runs the root command.
