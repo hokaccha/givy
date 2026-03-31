@@ -94,7 +94,8 @@ export function BlobView() {
     }
 
     const absPath = rootDir ? `${rootDir}/${owner}/${repo}/${path}` : undefined;
-    return <CodeViewer code={blob.content} language="" fileName={fileName} filePath={path} absolutePath={absPath} />;
+    const githubUrl = `https://github.com/${owner}/${repo}/blob/HEAD/${path}`;
+    return <CodeViewer code={blob.content} language="" fileName={fileName} filePath={path} absolutePath={absPath} githubUrl={githubUrl} />;
   }
 
   return (
