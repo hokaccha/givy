@@ -31,10 +31,22 @@ npx @playwright/cli close            # Close browser
 - **Go**: Follow standard Go conventions. Use `gofmt`. No exported symbols without doc comments.
 - **TypeScript**: Strict mode. Prefer named exports. Use function components with hooks.
 - **CSS**: Tailwind CSS v4 utility classes. No custom CSS unless absolutely necessary.
-- **Tests**: Every new feature needs tests. E2E tests for user-facing behavior. Unit tests for logic.
+- **Tests**: Every new feature needs tests. Use the checklist below to determine what tests to write.
   - **Follow the test plan**: Before writing tests, read `docs/testing/test-plan.md` to understand the test layers and what belongs where.
   - **Verify with executable tests**: Always run `make test-frontend` or `make test-e2e` to confirm changes work. Do not rely solely on visual inspection or screenshots.
   - **Update test plan**: When adding new test files or test coverage, update `docs/testing/test-plan.md` in the same commit.
+
+### Required Tests by Change Type
+
+| What you changed | Required test | Where |
+|---|---|---|
+| New/modified exported function in `internal/git/` | Unit test | `internal/git/*_test.go` |
+| New/modified API endpoint in `internal/handler/` | Integration test with `httptest` | `internal/handler/handler_test.go` |
+| New/modified page or route in `frontend/src/pages/` | E2E test | `frontend/e2e/*.spec.ts` |
+| New/modified utility in `frontend/src/lib/` | Unit test | `frontend/src/__tests__/*.test.ts` |
+| Bug fix | Regression test covering the bug | Appropriate layer from above |
+
+**A feature is not done until its tests pass.** Do not commit code changes without the corresponding tests.
 
 ## Architecture Rules
 

@@ -59,6 +59,26 @@ jobs:
       - run: pnpm --dir frontend build
       - uses: golangci/golangci-lint-action@v7
 
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm --dir frontend install --frozen-lockfile
+      - run: pnpm --dir frontend exec playwright install --with-deps chromium
+      - run: frontend/e2e/fixtures/setup-repos.sh frontend/e2e/fixtures/repos
+      - run: pnpm --dir frontend test:e2e
+
   lint-frontend:
     runs-on: ubuntu-latest
     steps:

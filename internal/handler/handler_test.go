@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -54,6 +55,14 @@ func createTestRepo(t *testing.T) string {
 	writeFile("src/main.go", "package main\n")
 	run("add", "-A")
 	run("commit", "-m", "Initial commit")
+
+	// Create feature branch with changes
+	run("checkout", "-b", "feature/add-tests")
+	writeFile("src/main.go", "package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Println(\"hello\") }\n")
+	writeFile("src/main_test.go", "package main\n")
+	run("add", "-A")
+	run("commit", "-m", "Add tests")
+	run("checkout", "main")
 
 	return root
 }
@@ -273,5 +282,141 @@ func TestListRepos_SearchFilter(t *testing.T) {
 	}
 	if len(empty.Repos) != 0 {
 		t.Fatalf("expected 0 repos, got %d", len(empty.Repos))
+	}
+}
+
+func TestCompareDiff(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/compare/main...feature/add-tests", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var result map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result["base"] != "main" {
+		t.Errorf("expected base 'main', got %v", result["base"])
+	}
+	if result["head"] != "feature/add-tests" {
+		t.Errorf("expected head 'feature/add-tests', got %v", result["head"])
+	}
+	patch, _ := result["patch"].(string)
+	if patch == "" {
+		t.Error("expected non-empty patch")
+	}
+}
+
+func TestCompareDiff_InvalidSpec(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/compare/invalid-spec", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestShowCommitHandler(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+	repoDir := filepath.Join(root, "testowner", "testrepo")
+
+	// Get the commit hash
+	cmd := exec.Command("git", "-C", repoDir, "rev-parse", "feature/add-tests")
+	out, err := cmd.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash := strings.TrimSpace(string(out))
+
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/commits/"+hash, nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var result map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	commit, ok := result["commit"].(map[string]any)
+	if !ok {
+		t.Fatal("expected commit object in response")
+	}
+	if commit["subject"] != "Add tests" {
+		t.Errorf("unexpected subject: %v", commit["subject"])
+	}
+}
+
+func TestListCommitsHandler(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/compare-commits/main...feature/add-tests", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var result map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	commits, ok := result["commits"].([]any)
+	if !ok {
+		t.Fatal("expected commits array in response")
+	}
+	if len(commits) == 0 {
+		t.Error("expected at least one commit")
+	}
+}
+
+func TestGetRaw(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/raw/README.md", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	body := w.Body.String()
+	if body != "# Test\n" {
+		t.Errorf("unexpected body: %q", body)
+	}
+
+	contentType := w.Header().Get("Content-Type")
+	if !strings.HasPrefix(contentType, "text/") {
+		t.Errorf("expected text/* content type, got %q", contentType)
+	}
+}
+
+func TestGetRaw_NotFound(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/raw/nonexistent.txt", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
 	}
 }

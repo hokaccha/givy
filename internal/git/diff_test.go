@@ -146,6 +146,65 @@ func TestDiffUnstaged_PatchSeparatesFiles(t *testing.T) {
 	}
 }
 
+func TestDiffStaged(t *testing.T) {
+	root := createTestRepo(t)
+	repoPath := filepath.Join(root, "testowner", "testrepo")
+
+	// Modify a file and stage it
+	readmePath := filepath.Join(repoPath, "README.md")
+	if err := os.WriteFile(readmePath, []byte("# Updated\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Stage the change
+	cmd := exec.Command("git", "-C", repoPath, "add", "README.md")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("git add failed: %v\n%s", err, out)
+	}
+
+	result, err := git.DiffStaged(repoPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(result.Files) == 0 {
+		t.Fatal("expected at least one file in staged diff")
+	}
+
+	fileMap := make(map[string]git.DiffStat)
+	for _, f := range result.Files {
+		fileMap[f.Path] = f
+	}
+
+	if _, ok := fileMap["README.md"]; !ok {
+		t.Error("expected README.md in staged diff")
+	}
+
+	if result.Patch == "" {
+		t.Error("patch should not be empty")
+	}
+	if !strings.Contains(result.Patch, "Updated") {
+		t.Error("patch should contain the new content")
+	}
+}
+
+func TestDiffStaged_NoChanges(t *testing.T) {
+	root := createTestRepo(t)
+	repoPath := filepath.Join(root, "testowner", "testrepo")
+
+	result, err := git.DiffStaged(repoPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(result.Files) != 0 {
+		t.Errorf("expected 0 files, got %d", len(result.Files))
+	}
+	if result.Patch != "" {
+		t.Errorf("expected empty patch, got %q", result.Patch)
+	}
+}
+
 func TestDiffUnstaged_RestoresIndexState(t *testing.T) {
 	root := createTestRepo(t)
 	repoPath := filepath.Join(root, "testowner", "testrepo")

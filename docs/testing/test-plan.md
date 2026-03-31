@@ -18,8 +18,8 @@ Located alongside source files in `internal/git/` and `internal/handler/`.
 | `repo_test.go` | Repository discovery: finds `owner/repo/.git` dirs, ignores non-repos, search filtering |
 | `tree_test.go` | `ls-tree` output parsing, filesystem-based `ListDir`/`ReadFile` |
 | `branch_test.go` | Branch listing parsing, default branch detection |
-| `diff_test.go` | Unified diff output parsing, unstaged diff includes untracked files, index state restoration |
-| `git_test.go` | Command execution helper, error wrapping, timeout handling |
+| `diff_test.go` | Unified diff output parsing, unstaged diff includes untracked files, index state restoration, staged diff |
+| `commit_test.go` | `ShowCommit` metadata and diff parsing, `ListCommits` range queries, empty range handling |
 
 Each test uses a real temporary git repository created in test helpers.
 
@@ -34,6 +34,11 @@ Each test uses a real temporary git repository created in test helpers.
 | `GET /api/repos/:owner/:repo/blob/*path` | Returns file content, detects binary |
 | `GET /api/repos/:owner/:repo/branches` | Returns branch list |
 | `GET /api/repos/:owner/:repo/compare/:spec` | Returns structured diff |
+| `GET /api/repos/:owner/:repo/compare/:spec` (invalid) | Returns 400 for invalid compare spec |
+| `GET /api/repos/:owner/:repo/commits/:commitId` | Returns commit metadata with diff |
+| `GET /api/repos/:owner/:repo/compare-commits/:spec` | Returns commit list between refs |
+| `GET /api/repos/:owner/:repo/raw/*path` | Returns raw file content with correct MIME type |
+| `GET /api/repos/:owner/:repo/raw/*path` (missing) | Returns 404 for missing file |
 | Error cases | 404 for missing repos/files/trees |
 
 Tests use `httptest.NewRecorder` with a real test git repo.
@@ -102,6 +107,23 @@ Test fixture repos are created by `frontend/e2e/fixtures/setup-repos.sh`.
 - Can select a range of lines (shift+click)
 - "Copy Prompt" copies formatted text for one file
 - "Copy All Prompt" copies formatted text for all files
+
+**`commit-view.spec.ts`** — Commit inspection
+- Commit list shows commits between two refs with metadata
+- Empty range shows "No commits found" message
+- Clicking a commit navigates to commit detail page
+- Commit detail shows subject, author, changed files, and diff
+- Diff shows added/removed line highlighting
+
+**`changes-view.spec.ts`** — Changes/working directory view
+- Shows Unstaged and Staged tabs
+- Unstaged tab is active by default
+- Can switch between tabs (URL changes to `@unstaged`/`@staged`)
+- Clean working directory shows "No changes" message
+- Branch compare mode shows diff with file list
+- Branch compare shows "View commits" link
+- Branch selector dropdown shows available branches
+- Can select branches and trigger comparison
 
 ## Test Fixture Repository
 
