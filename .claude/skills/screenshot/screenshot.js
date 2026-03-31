@@ -11,7 +11,13 @@
 //   node scripts/screenshot.js /hokaccha/givy --full
 //   node scripts/screenshot.js /hokaccha/givy --out /tmp/my-screenshot.png
 
-const { chromium } = require("@playwright/test");
+const path = require("path");
+
+// Resolve @playwright/test from frontend/node_modules regardless of script location
+const frontendDir = path.resolve(__dirname, "../../../frontend");
+const { chromium } = require(
+  require.resolve("@playwright/test", { paths: [frontendDir] })
+);
 
 const args = process.argv.slice(2);
 const urlPath = args.find((a) => !a.startsWith("--")) || "/";

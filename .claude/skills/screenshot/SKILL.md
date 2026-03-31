@@ -19,10 +19,10 @@ The frontend Vite server typically runs on port 5174 (or 5173).
 
 ## Usage
 
-Run `scripts/screenshot.js` from the **frontend** directory (so `@playwright/test` resolves):
+Run the screenshot script from the project root:
 
 ```bash
-cd /Users/hokaccha/local/src/github.com/hokaccha/givy/frontend && node ../.claude/skills/screenshot/screenshot.js $ARGUMENTS
+node /Users/hokaccha/local/src/github.com/hokaccha/givy/.claude/skills/screenshot/screenshot.js $ARGUMENTS
 ```
 
 ## Arguments
@@ -37,13 +37,13 @@ cd /Users/hokaccha/local/src/github.com/hokaccha/givy/frontend && node ../.claud
 
 ```bash
 # Screenshot repo root
-node ../.claude/skills/screenshot/screenshot.js /hokaccha/givy
+node .claude/skills/screenshot/screenshot.js /hokaccha/givy
 
 # Screenshot diff in split view
-node ../.claude/skills/screenshot/screenshot.js /hokaccha/givy/compare/test...main --split
+node .claude/skills/screenshot/screenshot.js /hokaccha/givy/compare/test...main --split
 
 # Screenshot with clipping
-node ../.claude/skills/screenshot/screenshot.js /hokaccha/givy --clip=0,100,1280,400
+node .claude/skills/screenshot/screenshot.js /hokaccha/givy --clip=0,100,1280,400
 ```
 
 ## After taking the screenshot
