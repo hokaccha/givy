@@ -50,9 +50,9 @@ export function TreeView() {
       .finally(() => setLoading(false));
   }, [owner, repo, path]);
 
-  const breadcrumbItems: Array<{ label: string; href?: string }> = [
-    { label: owner, href: `/${owner}` },
-    { label: repo, href: path ? `/${owner}/${repo}` : undefined },
+  const repoLabel = <>{owner} <span className="text-gray-400">/</span> {repo}</>;
+  const breadcrumbItems: Array<{ label: React.ReactNode; href?: string }> = [
+    { label: repoLabel, href: path ? `/${owner}/${repo}` : undefined },
   ];
   if (path) {
     const segments = path.split("/");

@@ -54,9 +54,9 @@ export function BlobView() {
   }, [owner, repo, path]);
 
   const segments = path.split("/");
-  const breadcrumbItems: Array<{ label: string; href?: string }> = [
-    { label: owner, href: `/${owner}` },
-    { label: repo, href: `/${owner}/${repo}` },
+  const repoLabel = <>{owner} <span className="text-gray-400">/</span> {repo}</>;
+  const breadcrumbItems: Array<{ label: React.ReactNode; href?: string }> = [
+    { label: repoLabel, href: `/${owner}/${repo}` },
   ];
   segments.forEach((seg, i) => {
     if (i === segments.length - 1) {
@@ -101,7 +101,7 @@ export function BlobView() {
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Breadcrumb items={breadcrumbItems} size="base" />
+          <Breadcrumb items={breadcrumbItems} size="lg" />
           <button
             onClick={copyPath}
             className="text-gray-400 hover:text-gray-600 cursor-pointer relative"

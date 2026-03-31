@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
 }
 
 interface BreadcrumbItem {
-  label: string;
+  label: ReactNode;
   href?: string;
 }
 
