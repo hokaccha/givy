@@ -8,6 +8,7 @@ import { BinaryViewer } from "../components/BinaryViewer";
 import { getBlob, getServerInfo } from "../api/client";
 import type { BlobResponse } from "../api/client";
 import { useTitle } from "../hooks/useTitle";
+import { usePollingBlob } from "../hooks/usePollingBlob";
 
 const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp"]);
 
@@ -46,12 +47,23 @@ export function BlobView() {
     getServerInfo().then((info) => setRootDir(info.rootDir));
   }, []);
 
+  type MarkdownViewMode = "preview" | "code";
+  const [markdownViewMode, setMarkdownViewMode] = useState<MarkdownViewMode>("preview");
+
   useEffect(() => {
     getBlob(owner, repo, path)
       .then(setBlob)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [owner, repo, path]);
+
+  usePollingBlob(
+    owner,
+    repo,
+    path,
+    isMarkdown(fileName) && markdownViewMode === "preview" && !loading,
+    setBlob,
+  );
 
   const segments = path.split("/");
   const breadcrumbItems: Array<{ label: React.ReactNode; href?: string }> = [
@@ -68,9 +80,6 @@ export function BlobView() {
       });
     }
   });
-
-  type MarkdownViewMode = "preview" | "code";
-  const [markdownViewMode, setMarkdownViewMode] = useState<MarkdownViewMode>("preview");
 
   const [copied, setCopied] = useState(false);
   const copyPath = useCallback(() => {

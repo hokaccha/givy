@@ -32,6 +32,7 @@ Each test uses a real temporary git repository created in test helpers.
 | `GET /api/repos/:owner/:repo/tree` | Returns root directory entries (filesystem-based) |
 | `GET /api/repos/:owner/:repo/tree/*path` | Returns subdirectory entries |
 | `GET /api/repos/:owner/:repo/blob/*path` | Returns file content, detects binary |
+| `GET /api/repos/:owner/:repo/blob/*path` (ETag) | Returns ETag header; 304 on If-None-Match match; ETag changes on file update |
 | `GET /api/repos/:owner/:repo/branches` | Returns branch list |
 | `GET /api/repos/:owner/:repo/compare/:spec` | Returns structured diff |
 | `GET /api/repos/:owner/:repo/compare/:spec` (invalid) | Returns 400 for invalid compare spec |

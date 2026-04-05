@@ -51,3 +51,10 @@ Comments are stored entirely in the browser's localStorage.
 - Repositories change outside givy (user runs git commands independently)
 - Showing stale data would be confusing
 - Git operations on local repos are fast enough
+
+### Markdown preview hot reload
+- In markdown preview mode, the frontend polls the blob API every 1 second
+- The blob endpoint returns an ETag (SHA-256 of content) and `Cache-Control: no-cache`
+- When the file hasn't changed, the server returns 304 Not Modified (no body)
+- The frontend compares content in a ref to avoid unnecessary React re-renders
+- Polling is only active in preview mode; switching to code view stops it immediately

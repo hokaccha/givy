@@ -208,6 +208,86 @@ func TestGetBlob(t *testing.T) {
 	}
 }
 
+func TestGetBlob_ETag(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+
+	// First request should return ETag header
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	etag := w.Header().Get("ETag")
+	if etag == "" {
+		t.Fatal("expected ETag header to be set")
+	}
+
+	// Second request with matching If-None-Match should return 304
+	req = httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
+	req.Header.Set("If-None-Match", etag)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotModified {
+		t.Fatalf("expected 304, got %d: %s", w.Code, w.Body.String())
+	}
+	if w.Body.Len() != 0 {
+		t.Error("expected empty body for 304 response")
+	}
+
+	// Request with non-matching If-None-Match should return 200
+	req = httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
+	req.Header.Set("If-None-Match", `"non-matching-etag"`)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestGetBlob_ETagChangesOnFileUpdate(t *testing.T) {
+	root := createTestRepo(t)
+	r := setupRouter(root)
+	repoDir := filepath.Join(root, "testowner", "testrepo")
+
+	// Get initial ETag
+	req := httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	etag1 := w.Header().Get("ETag")
+
+	// Update the file on disk
+	if err := os.WriteFile(filepath.Join(repoDir, "README.md"), []byte("# Updated\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// ETag should be different now
+	req = httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	etag2 := w.Header().Get("ETag")
+	if etag1 == etag2 {
+		t.Error("expected ETag to change after file update")
+	}
+
+	// Old ETag should no longer match (200, not 304)
+	req = httptest.NewRequest("GET", "/api/repos/testowner/testrepo/blob/README.md", nil)
+	req.Header.Set("If-None-Match", etag1)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 with stale ETag, got %d", w.Code)
+	}
+}
+
 func TestListBranches(t *testing.T) {
 	root := createTestRepo(t)
 	r := setupRouter(root)
