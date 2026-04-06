@@ -19,6 +19,7 @@ type TreeEntry struct {
 type BranchInfo struct {
 	Name       string `json:"name"`
 	IsDefault  bool   `json:"isDefault"`
+	IsCurrent  bool   `json:"isCurrent"`
 	LastCommit string `json:"lastCommit"`
 }
 

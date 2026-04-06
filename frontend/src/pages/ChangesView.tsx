@@ -199,7 +199,7 @@ function BranchCompareSelector({
   const [prevProps, setPrevProps] = useState(`${currentBase}/${currentHead}`);
 
   const propsKey = `${currentBase}/${currentHead}`;
-  if (prevProps !== propsKey) {
+  if (prevProps !== propsKey && currentBase && currentHead) {
     setPrevProps(propsKey);
     setBase(currentBase);
     setHead(currentHead);
@@ -215,10 +215,17 @@ function BranchCompareSelector({
     listBranches(owner, repo)
       .then((data) => {
         setBranches(data);
-        if (!base) {
-          const defaultBranch =
+        let resolvedBase = base;
+        if (!resolvedBase) {
+          resolvedBase =
             data.find((b) => b.isDefault)?.name ?? data[0]?.name ?? "main";
-          setBase(defaultBranch);
+          setBase(resolvedBase);
+        }
+        if (!head) {
+          const currentBranch = data.find((b) => b.isCurrent);
+          if (currentBranch && currentBranch.name !== resolvedBase) {
+            setHead(currentBranch.name);
+          }
         }
       })
       .catch(() => {})
@@ -236,7 +243,7 @@ function BranchCompareSelector({
     <div className="flex items-center gap-2 flex-wrap">
       <BranchSelector
         label="base"
-        branches={branches}
+        branches={branches.filter((b) => b.name !== head)}
         value={base}
         onChange={setBase}
         active={active}
@@ -244,7 +251,7 @@ function BranchCompareSelector({
       <span className="text-[#636c76] text-lg select-none">...</span>
       <BranchSelector
         label="compare"
-        branches={branches}
+        branches={branches.filter((b) => b.name !== base)}
         value={head}
         onChange={setHead}
         placeholder="select branch"

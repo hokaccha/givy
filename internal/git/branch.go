@@ -17,7 +17,8 @@ func ListBranches(repoPath string) ([]BranchInfo, error) {
 	}
 
 	defaultBranch := detectDefaultBranch(repoPath)
-	return parseBranchOutput(out, defaultBranch), nil
+	currentBranch := detectCurrentBranch(repoPath)
+	return parseBranchOutput(out, defaultBranch, currentBranch), nil
 }
 
 // detectDefaultBranch tries to determine the default branch of a repository.
@@ -37,8 +38,17 @@ func detectDefaultBranch(repoPath string) string {
 	return "main"
 }
 
+// detectCurrentBranch returns the name of the currently checked-out branch.
+func detectCurrentBranch(repoPath string) string {
+	out, err := runGit(repoPath, "symbolic-ref", "--short", "HEAD")
+	if err != nil {
+		return ""
+	}
+	return out
+}
+
 // parseBranchOutput parses the output of `git branch --format=...`.
-func parseBranchOutput(output, defaultBranch string) []BranchInfo {
+func parseBranchOutput(output, defaultBranch, currentBranch string) []BranchInfo {
 	var branches []BranchInfo
 	lines := strings.Split(output, "\n")
 
@@ -58,6 +68,7 @@ func parseBranchOutput(output, defaultBranch string) []BranchInfo {
 		branches = append(branches, BranchInfo{
 			Name:       name,
 			IsDefault:  name == defaultBranch,
+			IsCurrent:  name == currentBranch,
 			LastCommit: lastCommit,
 		})
 	}

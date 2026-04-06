@@ -17,6 +17,7 @@ export interface Repo {
 export interface Branch {
   name: string;
   isDefault: boolean;
+  isCurrent: boolean;
   lastCommit: string;
 }
 
