@@ -75,6 +75,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm --dir frontend install --frozen-lockfile
+      - run: pnpm --dir frontend build
       - run: pnpm --dir frontend exec playwright install --with-deps chromium
       - run: frontend/e2e/fixtures/setup-repos.sh frontend/e2e/fixtures/repos
       - run: pnpm --dir frontend test:e2e
