@@ -7,7 +7,7 @@ import (
 
 // ListBranches returns all branches in the repository.
 func ListBranches(repoPath string) ([]BranchInfo, error) {
-	out, err := runGit(repoPath, "branch", "--format=%(refname:short) %(objectname:short)")
+	out, err := runGit(repoPath, "branch", "--sort=-creatordate", "--format=%(refname:short) %(objectname:short)")
 	if err != nil {
 		return nil, err
 	}
