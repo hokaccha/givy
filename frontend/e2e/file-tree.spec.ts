@@ -28,7 +28,9 @@ test.describe("File Tree", () => {
     await page.goto("/testowner/testrepo/tree/src");
 
     // Breadcrumb should show repo name as a link
-    const repoLink = page.getByRole("link", { name: "testrepo" });
+    const repoLink = page
+      .getByRole("navigation")
+      .getByRole("link", { name: "testrepo" });
     await expect(repoLink).toBeVisible();
 
     // Click repo name to go back to root

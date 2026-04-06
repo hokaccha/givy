@@ -97,7 +97,7 @@ export function SimpleDiffViewer({ files }: SimpleDiffViewerProps) {
                 className="w-full text-sm pl-8 pr-3 py-1.5 border border-[#d0d7de] rounded-md focus:outline-none focus:border-[#0969da] focus:ring-1 focus:ring-[#0969da]"
               />
             </div>
-            <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">
+            <div data-testid="file-list" className="max-h-[calc(100vh-12rem)] overflow-y-auto">
               {filteredFiles.map((file) => (
                 <a
                   key={file.newPath}

@@ -58,10 +58,12 @@ test.describe("Changes View", () => {
 
     // Should show changed files in file list
     await expect(
-      page.getByRole("link", { name: "src/main.go" })
+      page.getByTestId("file-list").getByRole("link", { name: "src/main.go" })
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "src/main_test.go" })
+      page
+        .getByTestId("file-list")
+        .getByRole("link", { name: "src/main_test.go" })
     ).toBeVisible();
 
     // Should show diff content
