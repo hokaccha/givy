@@ -50,6 +50,7 @@ git commit -m "Add tests and improve main function"
 git checkout main
 
 # --- empty-repo ---
+mkdir -p "$OUTPUT_DIR/testowner/empty-repo"
 cd "$OUTPUT_DIR/testowner/empty-repo"
 git init -b main
 git config user.email "test@example.com"

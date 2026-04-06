@@ -12,7 +12,10 @@ export function usePollingBlob(
 ) {
   const lastContentRef = useRef<string | null>(null);
   const onUpdateRef = useRef(onUpdate);
-  onUpdateRef.current = onUpdate;
+
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  });
 
   const stableOnUpdate = useCallback((blob: BlobResponse) => {
     onUpdateRef.current(blob);
