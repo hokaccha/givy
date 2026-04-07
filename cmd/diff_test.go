@@ -76,36 +76,6 @@ func TestResolveCompareSpec_SingleBranch(t *testing.T) {
 	}
 }
 
-func TestResolveCompareSpec_NoArgs_OnFeatureBranch(t *testing.T) {
-	_, repoDir := createTestRepoForReview(t)
-	// We're on feature/test-branch from createTestRepoForReview
-
-	base, head, err := resolveCompareSpec(repoDir, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if base != "main" {
-		t.Errorf("expected base 'main', got %q", base)
-	}
-	if head != "feature/test-branch" {
-		t.Errorf("expected head 'feature/test-branch', got %q", head)
-	}
-}
-
-func TestResolveCompareSpec_NoArgs_OnDefaultBranch(t *testing.T) {
-	_, repoDir := createTestRepoForReview(t)
-
-	// Switch to main
-	cmd := exec.Command("git", "-C", repoDir, "checkout", "main")
-	if out, err := cmd.CombinedOutput(); err != nil {
-		t.Fatalf("git checkout main: %v\n%s", err, out)
-	}
-
-	_, _, err := resolveCompareSpec(repoDir, nil)
-	if err == nil {
-		t.Fatal("expected error when on default branch, got nil")
-	}
-}
 
 func TestResolveCompareSpec_InvalidSpec(t *testing.T) {
 	_, repoDir := createTestRepoForReview(t)

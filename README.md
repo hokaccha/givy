@@ -170,10 +170,10 @@ Requires a running `givy serve` instance. The root directory is fetched from the
 Open the diff view in the browser. Requires a running `givy serve` instance. Run this from inside a repository directory.
 
 ```bash
-# Compare current branch against default branch
+# Show unstaged changes (default)
 givy diff
 
-# Show unstaged changes
+# Show unstaged changes (explicit)
 givy diff @unstaged
 
 # Show staged changes

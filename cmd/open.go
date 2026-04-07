@@ -149,19 +149,6 @@ func fetchRootDirFromServer(port int) (string, error) {
 	return info.RootDir, nil
 }
 
-func detectBranch(repoDir string) string {
-	cmd := exec.Command("git", "-C", repoDir, "branch", "--show-current")
-	out, err := cmd.Output()
-	if err != nil {
-		return "main"
-	}
-	branch := strings.TrimSpace(string(out))
-	if branch == "" {
-		return "main"
-	}
-	return branch
-}
-
 func openBrowser(url string) error {
 	switch runtime.GOOS {
 	case "darwin":

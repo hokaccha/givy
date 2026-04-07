@@ -22,7 +22,7 @@ var diffCmd = &cobra.Command{
 	Long: `Open the givy diff view in the default browser.
 
 Usage:
-  givy diff                          # Compare current branch against default branch
+  givy diff                          # Show unstaged changes (same as @unstaged)
   givy diff @unstaged                # Show unstaged changes
   givy diff @staged                  # Show staged changes
   givy diff feature/branch           # Compare feature/branch against default branch
@@ -53,8 +53,13 @@ Usage:
 		repo := parts[1]
 		repoDir := filepath.Join(rootDir, owner, repo)
 
+		// No args: default to @unstaged
+		if len(args) == 0 {
+			args = []string{"@unstaged"}
+		}
+
 		// Handle @unstaged / @staged shortcuts
-		if len(args) == 1 && (args[0] == "@unstaged" || args[0] == "@staged") {
+		if args[0] == "@unstaged" || args[0] == "@staged" {
 			url := fmt.Sprintf("http://localhost:%d/%s/%s/changes/%s", diffPort, owner, repo, args[0])
 			fmt.Println(url)
 			return openBrowser(url)
@@ -73,31 +78,18 @@ Usage:
 
 // resolveCompareSpec determines the base and head refs from the arguments.
 func resolveCompareSpec(repoDir string, args []string) (base, head string, err error) {
-	if len(args) == 1 {
-		arg := args[0]
-		if strings.Contains(arg, "...") {
-			// Explicit base...head
-			parts := strings.SplitN(arg, "...", 2)
-			if parts[0] == "" || parts[1] == "" {
-				return "", "", fmt.Errorf("invalid compare spec: %q", arg)
-			}
-			return parts[0], parts[1], nil
+	arg := args[0]
+	if strings.Contains(arg, "...") {
+		// Explicit base...head
+		parts := strings.SplitN(arg, "...", 2)
+		if parts[0] == "" || parts[1] == "" {
+			return "", "", fmt.Errorf("invalid compare spec: %q", arg)
 		}
-		// Single branch: compare default...branch
-		defaultBranch := detectDefaultBranch(repoDir)
-		return defaultBranch, arg, nil
+		return parts[0], parts[1], nil
 	}
-
-	// No args: compare default...current
-	currentBranch := detectBranch(repoDir)
-	if currentBranch == "" {
-		return "", "", fmt.Errorf("not on a branch (detached HEAD)")
-	}
+	// Single branch: compare default...branch
 	defaultBranch := detectDefaultBranch(repoDir)
-	if currentBranch == defaultBranch {
-		return "", "", fmt.Errorf("already on the default branch (%s), specify a branch to compare", defaultBranch)
-	}
-	return defaultBranch, currentBranch, nil
+	return defaultBranch, arg, nil
 }
 
 // detectDefaultBranch determines the default branch for a repository.
