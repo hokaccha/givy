@@ -23,8 +23,7 @@ go install github.com/hokaccha/givy@latest
 Or install with [mise](https://mise.jdx.dev/):
 
 ```bash
-mise use github:hokaccha/givy@latest
-mise install github:hokaccha/givy@latest
+mise use -g github:hokaccha/givy@latest
 ```
 
 Or build from source:
