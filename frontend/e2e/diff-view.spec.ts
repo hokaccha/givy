@@ -9,8 +9,10 @@ test.describe("Diff View", () => {
 
     // Should show changed files in the file list
     const fileList = page.locator("[data-testid='file-list']");
-    await expect(fileList.getByText("src/main.go")).toBeVisible();
-    await expect(fileList.getByText("src/main_test.go")).toBeVisible();
+    await expect(fileList.locator("[data-path='src/main.go']")).toBeVisible();
+    await expect(
+      fileList.locator("[data-path='src/main_test.go']")
+    ).toBeVisible();
   });
 
   test("shows addition and deletion stats", async ({ page }) => {
@@ -69,7 +71,7 @@ test.describe("Diff View", () => {
     // Click on a file name in the file list
     await page
       .locator("[data-testid='file-list']")
-      .getByText("src/main.go")
+      .locator("[data-path='src/main.go']")
       .click();
 
     // The diff for that file should be visible/scrolled to

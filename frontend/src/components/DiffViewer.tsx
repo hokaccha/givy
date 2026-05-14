@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router";
 import type { DiffFile, DiffLine, DiffHunk } from "../lib/diff-parser";
 import type { Comment } from "../lib/comments";
 import { DiffCommentForm, CommentDisplay } from "./DiffComment";
 import { CopyPromptButton } from "./CopyPromptButton";
+import { FileTreeNav } from "./FileTreeNav";
 
 type ViewMode = "split" | "unified";
 
@@ -43,14 +44,24 @@ export function DiffViewer({
     setViewMode(mode);
     localStorage.setItem("givy:viewMode", mode);
   };
-  const [filterText, setFilterText] = useState("");
 
-  const filteredFiles = filterText
-    ? files.filter((f) => f.newPath.toLowerCase().includes(filterText.toLowerCase()))
-    : files;
+  const filePaths = useMemo(() => files.map((f) => f.newPath), [files]);
+  const commentCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of comments) {
+      counts.set(c.filePath, (counts.get(c.filePath) ?? 0) + 1);
+    }
+    return counts;
+  }, [comments]);
 
   const totalAdditions = files.reduce((sum, f) => sum + fileAdditions(f), 0);
   const totalDeletions = files.reduce((sum, f) => sum + fileDeletions(f), 0);
+
+  const scrollToFile = useCallback((path: string) => {
+    document
+      .getElementById(`diff-${path}`)
+      ?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   return (
     <div>
@@ -100,40 +111,11 @@ export function DiffViewer({
       <div className="flex gap-4">
         {/* Left sidebar - File tree */}
         <div className="w-64 shrink-0">
-          <div className="sticky top-4">
-            <div className="relative mb-3">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#636c76]" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z" />
-              </svg>
-              <input
-                type="search"
-                placeholder="Filter files..."
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-                className="w-full text-sm pl-8 pr-3 py-1.5 border border-[#d0d7de] rounded-md focus:outline-none focus:border-[#0969da] focus:ring-1 focus:ring-[#0969da]"
-              />
-            </div>
-            <div data-testid="file-list" className="max-h-[calc(100vh-12rem)] overflow-y-auto">
-              {filteredFiles.map((file) => {
-                return (
-                  <a
-                    key={file.newPath}
-                    href={`#diff-${file.newPath}`}
-                    className="flex items-center gap-2 px-1 py-1.5 text-sm text-[#1f2328] hover:bg-[#f6f8fa] rounded"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById(`diff-${file.newPath}`)?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  >
-                    <svg className="w-4 h-4 shrink-0 text-[#57606a]" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z" />
-                    </svg>
-                    <span className="truncate">{file.newPath}</span>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
+          <FileTreeNav
+            paths={filePaths}
+            commentCounts={commentCounts}
+            onFileClick={scrollToFile}
+          />
         </div>
 
         {/* Right side - Diff content */}

@@ -55,12 +55,10 @@ test.describe("Commit View", () => {
 
     // Should show changed files in the diff
     await expect(
-      page.getByTestId("file-list").getByRole("link", { name: "src/main.go" })
+      page.getByTestId("file-list").locator("[data-path='src/main.go']")
     ).toBeVisible();
     await expect(
-      page
-        .getByTestId("file-list")
-        .getByRole("link", { name: "src/main_test.go" })
+      page.getByTestId("file-list").locator("[data-path='src/main_test.go']")
     ).toBeVisible();
 
     // Should show diff stats
