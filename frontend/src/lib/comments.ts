@@ -116,7 +116,7 @@ export function formatPrompt(filePath: string, comments: Comment[], diffContext?
       comment.startLine === comment.endLine
         ? `Line ${comment.startLine}`
         : `Lines ${comment.startLine}-${comment.endLine}`;
-    lines.push(`- **${lineRange}** (${comment.side}): ${comment.body}`);
+    lines.push(`- **${lineRange}**: ${comment.body}`);
   }
   return lines.join("\n");
 }
