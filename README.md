@@ -16,14 +16,20 @@ A local GitHub-like git viewer with a web UI. Browse repositories, view files wi
 
 ## Install
 
-```bash
-go install github.com/hokaccha/givy@latest
-```
-
-Or install with [mise](https://mise.jdx.dev/):
+Install with [mise](https://mise.jdx.dev/):
 
 ```bash
 mise use -g github:hokaccha/givy@latest
+```
+
+Or download a pre-built binary from the [latest release](https://github.com/hokaccha/givy/releases/latest). Pick the archive for your OS/arch, extract it, and place the `givy` binary somewhere on your `PATH`:
+
+```bash
+# Example for macOS arm64
+VERSION=v0.7.0
+curl -L -o givy.tar.gz "https://github.com/hokaccha/givy/releases/download/${VERSION}/givy-${VERSION}-darwin-arm64.tar.gz"
+tar -xzf givy.tar.gz
+sudo mv "givy-${VERSION}-darwin-arm64/givy" /usr/local/bin/
 ```
 
 Or build from source:

@@ -44,7 +44,7 @@ jobs:
           for target in "${TARGETS[@]}"; do
             GOOS="${target%/*}"
             GOARCH="${target#*/}"
-            OUTPUT="givy-${VERSION}-${GOOS}-${GOARCH}"
+            OUTPUT="givy-${GOOS}-${GOARCH}"
             echo "Building ${OUTPUT}..."
             GOOS=$GOOS GOARCH=$GOARCH go build -ldflags "-X github.com/hokaccha/givy/cmd.Version=${VERSION}" -o "dist/${OUTPUT}/givy" .
             tar -czf "dist/${OUTPUT}.tar.gz" -C dist "${OUTPUT}"
