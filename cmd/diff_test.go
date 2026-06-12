@@ -76,7 +76,6 @@ func TestResolveCompareSpec_SingleBranch(t *testing.T) {
 	}
 }
 
-
 func TestResolveCompareSpec_InvalidSpec(t *testing.T) {
 	_, repoDir := createTestRepoForReview(t)
 

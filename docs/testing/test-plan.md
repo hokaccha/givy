@@ -48,7 +48,8 @@ Tests use `httptest.NewRecorder` with a real test git repo.
 
 | Test | What It Tests |
 |------|--------------|
-| `review_test.go` | `resolveCompareSpec`: explicit base...head, single branch, no args, error cases |
+| `diff_test.go` | `resolveCompareSpec`: explicit base...head, single branch, no args, error cases |
+| `open_test.go` | `isCommitHash` detection; `findRepoRoot` walking up to `.git`; `deriveRootDir` from `GIVY_ROOT_DIR` and from the `<root>/<owner>/<repo>` layout |
 
 ### 2. Frontend Unit Tests (Vitest)
 

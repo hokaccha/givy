@@ -153,11 +153,15 @@ givy serve ~/src
 givy serve --port 8080 ~/src
 ```
 
-### `givy open <path | commit-id>`
+### `givy open [path | commit-id]`
 
-Open a file, directory, or commit in the browser. Requires a running `givy serve` instance.
+Open a file, directory, or commit in the browser.
 
 ```bash
+# Open the current directory
+givy open .
+givy open          # same as `givy open .`
+
 # Open a file
 givy open ~/src/hokaccha/givy/internal/git/repo.go
 
@@ -168,7 +172,10 @@ givy open ~/src/hokaccha/givy/internal/
 givy open abc1234
 ```
 
-Requires a running `givy serve` instance. The root directory is fetched from the server automatically.
+If a `givy serve` instance is already running, its root directory is fetched from
+the server automatically. Otherwise a server is started in the background, using
+`GIVY_ROOT_DIR` if set, or two levels above the enclosing git repository
+(assuming the `<root>/<owner>/<repo>` layout).
 
 ### `givy diff [spec]`
 
@@ -196,7 +203,8 @@ givy diff main...feature/new-ui
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
 | `GIVY_PORT` | `6271` | Server port (also used by `open` and `diff` commands) |
-| `GIVY_ROOT_DIR` | — | Default root directory for `givy serve` |
+| `GIVY_ROOT_DIR` | — | Default root directory for `givy serve` (also used by `givy open` when auto-starting the server) |
+| `BROWSER` | — | Command used to open URLs (defaults to `open` on macOS, `xdg-open` on Linux) |
 
 ## Inspiration
 

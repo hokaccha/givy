@@ -42,7 +42,7 @@ internal/git/     → Git operations via exec.Command, filesystem scanning
 
 | Domain | Package | Responsibility |
 |--------|---------|---------------|
-| CLI | `cmd/` | Parse CLI args: `serve`, `open`, `review` |
+| CLI | `cmd/` | Parse CLI args: `serve`, `open`, `diff` |
 | HTTP | `internal/server/` | Server lifecycle, routing, middleware, static files |
 | API | `internal/handler/` | Request parsing, response formatting, error mapping |
 | Git | `internal/git/` | Execute git commands, parse output, scan repos |
