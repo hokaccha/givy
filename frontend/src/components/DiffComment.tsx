@@ -20,6 +20,11 @@ export function DiffCommentForm({
       ? `Line ${startLine}`
       : `Lines ${startLine}-${endLine}`;
 
+  const submitIfNotEmpty = () => {
+    const trimmedBody = body.trim();
+    if (trimmedBody) onSubmit(trimmedBody);
+  };
+
   return (
     <div className="bg-white border border-[#d0d7de] rounded-md p-3 my-1">
       <div className="text-xs text-[#636c76] mb-2">{rangeLabel}</div>
@@ -27,6 +32,12 @@ export function DiffCommentForm({
         placeholder="Add a comment..."
         value={body}
         onChange={(e) => setBody(e.target.value)}
+        onKeyDown={(e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            submitIfNotEmpty();
+          }
+        }}
         className="w-full border border-[#d0d7de] rounded-md p-2 text-sm resize-y min-h-[60px] focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-transparent"
         autoFocus
       />
@@ -38,10 +49,9 @@ export function DiffCommentForm({
           Cancel
         </button>
         <button
-          onClick={() => {
-            if (body.trim()) onSubmit(body.trim());
-          }}
+          onClick={submitIfNotEmpty}
           disabled={!body.trim()}
+          title="Submit (Ctrl/⌘+Enter)"
           className="px-3 py-1 text-sm bg-[#2da44e] text-white rounded-md hover:bg-[#2c974b] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Submit
@@ -62,11 +72,25 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
   const [editBody, setEditBody] = useState(body);
 
   if (editing) {
+    const saveIfNotEmpty = () => {
+      const trimmedBody = editBody.trim();
+      if (trimmedBody) {
+        onEdit(trimmedBody);
+        setEditing(false);
+      }
+    };
+
     return (
       <div className="bg-white border border-[#d0d7de] rounded-md p-3 my-1">
         <textarea
           value={editBody}
           onChange={(e) => setEditBody(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+              e.preventDefault();
+              saveIfNotEmpty();
+            }
+          }}
           className="w-full border border-[#d0d7de] rounded-md p-2 text-sm resize-y min-h-[60px] focus:outline-none focus:ring-2 focus:ring-[#0969da]"
           role="textbox"
         />
@@ -78,12 +102,8 @@ export function CommentDisplay({ body, onEdit, onDelete }: CommentDisplayProps) 
             Cancel
           </button>
           <button
-            onClick={() => {
-              if (editBody.trim()) {
-                onEdit(editBody.trim());
-                setEditing(false);
-              }
-            }}
+            onClick={saveIfNotEmpty}
+            title="Save (Ctrl/⌘+Enter)"
             className="px-3 py-1 text-sm bg-[#2da44e] text-white rounded-md hover:bg-[#2c974b] cursor-pointer"
           >
             Save

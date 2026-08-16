@@ -40,6 +40,56 @@ test.describe("Review Comments", () => {
     await expect(page.getByText("This needs refactoring")).toBeVisible();
   });
 
+  test("Cmd/Ctrl+Enter in the textarea submits the comment", async ({ page }) => {
+    // Click line to open comment form
+    await page.locator("[data-line='5'][data-side='right']").first().click();
+
+    const textarea = page.getByPlaceholder(/add a comment/i);
+    await textarea.fill("Submitted via keyboard shortcut");
+    await textarea.press("ControlOrMeta+Enter");
+
+    // Comment should be visible, form should be gone
+    await expect(page.getByText("Submitted via keyboard shortcut")).toBeVisible();
+    await expect(page.getByPlaceholder(/add a comment/i)).not.toBeVisible();
+  });
+
+  test("Cmd/Ctrl+Enter in an existing comment saves the edit", async ({ page }) => {
+    await page.locator("[data-line='5'][data-side='right']").first().click();
+    await page.getByPlaceholder(/add a comment/i).fill("Original text");
+    await page.getByRole("button", { name: /submit/i }).click();
+
+    await page.getByRole("button", { name: /edit/i }).first().click();
+    const editInput = page.getByRole("textbox").first();
+    await editInput.fill("Updated via keyboard shortcut");
+    await editInput.press("ControlOrMeta+Enter");
+
+    await expect(page.getByText("Updated via keyboard shortcut")).toBeVisible();
+    await expect(page.getByText("Original text")).not.toBeVisible();
+  });
+
+  test("Enter without a modifier inserts a newline", async ({ page }) => {
+    await page.locator("[data-line='5'][data-side='right']").first().click();
+
+    const textarea = page.getByPlaceholder(/add a comment/i);
+    await textarea.fill("First line");
+    await textarea.press("Enter");
+    await textarea.type("Second line");
+
+    await expect(textarea).toHaveValue("First line\nSecond line");
+    await expect(page.getByRole("button", { name: /submit/i })).toBeVisible();
+  });
+
+  test("Cmd/Ctrl+Enter does not submit whitespace-only comments", async ({ page }) => {
+    await page.locator("[data-line='5'][data-side='right']").first().click();
+
+    const textarea = page.getByPlaceholder(/add a comment/i);
+    await textarea.fill("   ");
+    await textarea.press("ControlOrMeta+Enter");
+
+    await expect(textarea).toBeVisible();
+    await expect(page.getByRole("button", { name: /submit/i })).toBeDisabled();
+  });
+
   test("comments persist after page reload", async ({ page }) => {
     // Add a comment
     await page.locator("[data-line='5'][data-side='right']").first().click();
